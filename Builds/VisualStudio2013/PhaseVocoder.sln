@@ -1,0 +1,19 @@
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2013
+Project("{4D830746-908E-2417-4D39-F04370772726}") = "PhaseVocoder", "PhaseVocoder.vcxproj", "{48B4A7D3-7A47-3C8D-A0A8-92B44E69F427}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{48B4A7D3-7A47-3C8D-A0A8-92B44E69F427}.Debug|Win32.ActiveCfg = Debug|Win32
+		{48B4A7D3-7A47-3C8D-A0A8-92B44E69F427}.Debug|Win32.Build.0 = Debug|Win32
+		{48B4A7D3-7A47-3C8D-A0A8-92B44E69F427}.Release|Win32.ActiveCfg = Release|Win32
+		{48B4A7D3-7A47-3C8D-A0A8-92B44E69F427}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
