@@ -33,12 +33,13 @@
     </GROUP>
   </MAINGROUP>
   <EXPORTFORMATS>
-    <VS2015 targetFolder="Builds/VisualStudio2015">
+    <VS2015 targetFolder="Builds/VisualStudio2015" externalLibraries="libfftw3f-3.lib">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" winWarningLevel="4" generateManifest="1" winArchitecture="32-bit"
                        isDebug="1" optimisation="1" targetName="PhaseVocoder" headerPath="G:\Programming\libraries\fftw3.3.4_32"/>
         <CONFIGURATION name="Release" winWarningLevel="4" generateManifest="1" winArchitecture="32-bit"
-                       isDebug="0" optimisation="2" targetName="PhaseVocoder" headerPath="G:\Programming\libraries\fftw3.3.4_32"/>
+                       isDebug="0" optimisation="2" targetName="PhaseVocoder" headerPath="G:\Programming\libraries\fftw3.3.4_32"
+                       libraryPath="G:\Programming\libraries\fftw3.3.4_32"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_core" path="../JUCE/modules"/>
@@ -55,12 +56,13 @@
         <MODULEPATH id="juce_audio_utils" path="../JUCE/modules"/>
       </MODULEPATHS>
     </VS2015>
-    <VS2013 targetFolder="Builds/VisualStudio2013">
+    <VS2013 targetFolder="Builds/VisualStudio2013" externalLibraries="libfftw3f-3.lib">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" winWarningLevel="4" generateManifest="1" winArchitecture="32-bit"
                        isDebug="1" optimisation="1" targetName="PhaseVocoder" headerPath="G:\Programming\libraries\fftw3.3.4_32"/>
         <CONFIGURATION name="Release" winWarningLevel="4" generateManifest="1" winArchitecture="32-bit"
-                       isDebug="0" optimisation="2" targetName="PhaseVocoder" headerPath="G:\Programming\libraries\fftw3.3.4_32"/>
+                       isDebug="0" optimisation="2" targetName="PhaseVocoder" headerPath="G:\Programming\libraries\fftw3.3.4_32"
+                       libraryPath="G:\Programming\libraries\fftw3.3.4_32"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_core" path="../JUCE/modules"/>
@@ -77,12 +79,13 @@
         <MODULEPATH id="juce_audio_utils" path="../JUCE/modules"/>
       </MODULEPATHS>
     </VS2013>
-    <VS2012 targetFolder="Builds/VisualStudio2012">
+    <VS2012 targetFolder="Builds/VisualStudio2012" externalLibraries="libfftw3f-3.lib">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" winWarningLevel="4" generateManifest="1" winArchitecture="32-bit"
                        isDebug="1" optimisation="1" targetName="PhaseVocoder" headerPath="G:\Programming\libraries\fftw3.3.4_32"/>
         <CONFIGURATION name="Release" winWarningLevel="4" generateManifest="1" winArchitecture="32-bit"
-                       isDebug="0" optimisation="2" targetName="PhaseVocoder" headerPath="G:\Programming\libraries\fftw3.3.4_32"/>
+                       isDebug="0" optimisation="2" targetName="PhaseVocoder" headerPath="G:\Programming\libraries\fftw3.3.4_32"
+                       libraryPath="G:\Programming\libraries\fftw3.3.4_32"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_core" path="../JUCE/modules"/>

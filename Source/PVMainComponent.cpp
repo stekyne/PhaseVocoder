@@ -46,8 +46,7 @@ PVMainComponent::PVMainComponent ()
       repeat_btn1 (0),
       phaselock_btn1 (0)
 {
-    addAndMakeVisible (header_label1 = new Label (T("header_label1"),
-                                                  T("Phase Vocoder")));
+    addAndMakeVisible (header_label1 = new Label ("header_label1", "Phase Vocoder"));
     header_label1->setFont (Font (22.0000f, Font::bold));
     header_label1->setJustificationType (Justification::topLeft);
     header_label1->setEditable (false, false, false);
@@ -55,104 +54,101 @@ PVMainComponent::PVMainComponent ()
     header_label1->setColour (TextEditor::textColourId, Colours::black);
     header_label1->setColour (TextEditor::backgroundColourId, Colour (0x0));
 
-    addAndMakeVisible (details_group1 = new GroupComponent (T("details_group1"),
-                                                            T("Info")));
+    addAndMakeVisible (details_group1 = new GroupComponent ("details_group1",
+                                                            "Info"));
     details_group1->setColour (GroupComponent::outlineColourId, Colour (0xff727272));
 
-    addAndMakeVisible (cpu_label1 = new Label (T("cpu_label1"),
-                                               T("CPU: 100%")));
-    cpu_label1->setFont (Font (T("Arial"), 14.0000f, Font::bold));
+    addAndMakeVisible (cpu_label1 = new Label ("cpu_label1",
+                                               "CPU: 100%"));
+    cpu_label1->setFont (Font ("Arial", 14.0000f, Font::bold));
     cpu_label1->setJustificationType (Justification::centred);
     cpu_label1->setEditable (false, false, false);
     cpu_label1->setColour (Label::textColourId, Colour (0xff282828));
     cpu_label1->setColour (TextEditor::textColourId, Colours::black);
     cpu_label1->setColour (TextEditor::backgroundColourId, Colour (0x0));
 
-    addAndMakeVisible (settings_btn1 = new TextButton (T("settings_btn1")));
-    settings_btn1->setTooltip (T("Change audio and FFT settings here"));
-    settings_btn1->setButtonText (T("Audio Setup"));
+    addAndMakeVisible (settings_btn1 = new TextButton ("settings_btn1"));
+    settings_btn1->setTooltip ("Change audio and FFT settings here");
+    settings_btn1->setButtonText ("Audio Setup");
     settings_btn1->addListener (this);
     settings_btn1->setColour (TextButton::buttonColourId, Colour (0xff727272));
     settings_btn1->setColour (TextButton::buttonOnColourId, Colour (0xff377a70));
     settings_btn1->setColour (TextButton::textColourOnId, Colours::white);
     settings_btn1->setColour (TextButton::textColourOffId, Colours::white);
 
-    addAndMakeVisible (play_btn1 = new TextButton (T("play_btn1")));
-    play_btn1->setTooltip (T("Play the sound file currently loaded, does nothing if no file is loaded"));
-    play_btn1->setButtonText (T("Play"));
+    addAndMakeVisible (play_btn1 = new TextButton ("play_btn1"));
+    play_btn1->setTooltip ("Play the sound file currently loaded, does nothing if no file is loaded");
+    play_btn1->setButtonText ("Play");
     play_btn1->setConnectedEdges (Button::ConnectedOnRight);
     play_btn1->addListener (this);
     play_btn1->setColour (TextButton::buttonColourId, Colour (0xff3f9c48));
     play_btn1->setColour (TextButton::buttonOnColourId, Colour (0xffe6df64));
 
-    addAndMakeVisible (stop_btn1 = new TextButton (T("stop_btn1")));
-    stop_btn1->setTooltip (T("Stop playing the current sound file, does nothing if no file is loaded"));
-    stop_btn1->setButtonText (T("Stop"));
+    addAndMakeVisible (stop_btn1 = new TextButton ("stop_btn1"));
+    stop_btn1->setTooltip ("Stop playing the current sound file, does nothing if no file is loaded");
+    stop_btn1->setButtonText ("Stop");
     stop_btn1->setConnectedEdges (Button::ConnectedOnLeft);
     stop_btn1->addListener (this);
     stop_btn1->setColour (TextButton::buttonColourId, Colour (0xffa44444));
     stop_btn1->setColour (TextButton::buttonOnColourId, Colour (0xffe6df64));
 
-    addAndMakeVisible (playback_pos_slider1 = new Slider (T("playback_pos_slider1")));
-    playback_pos_slider1->setTooltip (T("The current playback position of the sound file"));
+    addAndMakeVisible (playback_pos_slider1 = new Slider ("playback_pos_slider1"));
+    playback_pos_slider1->setTooltip ("The current playback position of the sound file");
     playback_pos_slider1->setRange (0, 1, 0);
     playback_pos_slider1->setSliderStyle (Slider::LinearHorizontal);
     playback_pos_slider1->setTextBoxStyle (Slider::TextBoxAbove, false, 90, 20);
     playback_pos_slider1->addListener (this);
 
-    addAndMakeVisible (label = new Label (T("new label"),
-                                          T("Volume")));
+    addAndMakeVisible (label = new Label ("new label", "Volume"));
     label->setFont (Font (15.0000f, Font::plain));
     label->setJustificationType (Justification::centredLeft);
     label->setEditable (false, false, false);
     label->setColour (TextEditor::textColourId, Colours::black);
     label->setColour (TextEditor::backgroundColourId, Colour (0x0));
 
-    addAndMakeVisible (vol_slider1 = new Slider (T("vol_slider1")));
-    vol_slider1->setTooltip (T("Adjusts the volume of the loaded sound file"));
+    addAndMakeVisible (vol_slider1 = new Slider ("vol_slider1"));
+    vol_slider1->setTooltip ("Adjusts the volume of the loaded sound file");
     vol_slider1->setRange (0, 1, 0.001);
     vol_slider1->setSliderStyle (Slider::LinearHorizontal);
     vol_slider1->setTextBoxStyle (Slider::TextBoxRight, false, 40, 15);
     vol_slider1->addListener (this);
 
-    addAndMakeVisible (label2 = new Label (T("new label"),
-                                           T("Pitch")));
+    addAndMakeVisible (label2 = new Label ("new label", "Pitch"));
     label2->setFont (Font (15.0000f, Font::plain));
     label2->setJustificationType (Justification::centredLeft);
     label2->setEditable (false, false, false);
     label2->setColour (TextEditor::textColourId, Colours::black);
     label2->setColour (TextEditor::backgroundColourId, Colour (0x0));
 
-    addAndMakeVisible (pitch_slider1 = new Slider (T("pitch_slider1")));
-    pitch_slider1->setTooltip (T("Adjusts the pitch of the loaded sound file, the setting is a ratio so 1:1 is the original playback speed"));
+    addAndMakeVisible (pitch_slider1 = new Slider ("pitch_slider1"));
+    pitch_slider1->setTooltip ("Adjusts the pitch of the loaded sound file, the setting is a ratio so 1:1 is the original playback speed");
     pitch_slider1->setRange (0.5, 2, 0.001);
     pitch_slider1->setSliderStyle (Slider::LinearHorizontal);
     pitch_slider1->setTextBoxStyle (Slider::TextBoxRight, false, 40, 15);
     pitch_slider1->addListener (this);
 
-    addAndMakeVisible (label3 = new Label (T("new label"),
-                                           T("Time")));
+    addAndMakeVisible (label3 = new Label ("new label", "Time"));
     label3->setFont (Font (15.0000f, Font::plain));
     label3->setJustificationType (Justification::centredLeft);
     label3->setEditable (false, false, false);
     label3->setColour (TextEditor::textColourId, Colours::black);
     label3->setColour (TextEditor::backgroundColourId, Colour (0x0));
 
-    addAndMakeVisible (time_slider1 = new Slider (T("time_slider1")));
-    time_slider1->setTooltip (T("Adjusts the length of the loaded sound file, the setting is a ratio so 1:1 is the original playback length"));
+    addAndMakeVisible (time_slider1 = new Slider ("time_slider1"));
+    time_slider1->setTooltip ("Adjusts the length of the loaded sound file, the setting is a ratio so 1:1 is the original playback length");
     time_slider1->setRange (0.001, 2, 0.001);
     time_slider1->setSliderStyle (Slider::LinearHorizontal);
     time_slider1->setTextBoxStyle (Slider::TextBoxRight, false, 40, 15);
     time_slider1->addListener (this);
 
-    addAndMakeVisible (repeat_btn1 = new ToggleButton (T("repeat_btn1")));
-    repeat_btn1->setTooltip (T("Click to repeatedly play the audio file, when the play button is pressed"));
-    repeat_btn1->setButtonText (T("Repeat"));
+    addAndMakeVisible (repeat_btn1 = new ToggleButton ("repeat_btn1"));
+    repeat_btn1->setTooltip ("Click to repeatedly play the audio file, when the play button is pressed");
+    repeat_btn1->setButtonText ("Repeat");
     repeat_btn1->addListener (this);
 
-    addAndMakeVisible (phaselock_btn1 = new ToggleButton (T("phaselock_btn1")));
-    phaselock_btn1->setTooltip (T("To turn phase locking on or off for the algorithm"));
-    phaselock_btn1->setButtonText (T("Phase Lock"));
+    addAndMakeVisible (phaselock_btn1 = new ToggleButton ("phaselock_btn1"));
+    phaselock_btn1->setTooltip ("To turn phase locking on or off for the algorithm");
+    phaselock_btn1->setButtonText ("Phase Lock");
     phaselock_btn1->addListener (this);
     phaselock_btn1->setToggleState (true, false);
 
@@ -183,11 +179,11 @@ PVMainComponent::PVMainComponent ()
 
 	audio_manager = AudioManager::getInstance();
 
-	vol_slider1->setValue( 1.0, true );
-	pitch_slider1->setValue( 1.0, true );
-	time_slider1->setValue( 1.0, true );
+	vol_slider1->setValue (1.0);
+	pitch_slider1->setValue (1.0);
+	time_slider1->setValue (1.0);
 
-	startTimer( 1000 / 30 );
+	startTimer (1000 / 30);
 
     //[/Constructor]
 }
@@ -371,7 +367,7 @@ void PVMainComponent::timerCallback()
 	waveform_display->setPosition( position );
 
 	cpu_label1->setText( "CPU: " + String( audio_manager->getCPU(), 2 )
-						 + "%", true );
+						 + "%", NotificationType::sendNotification);
 }
 
 void PVMainComponent::filenameComponentChanged( FilenameComponent* )
