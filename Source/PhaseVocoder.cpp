@@ -1,17 +1,6 @@
-/*
-  ==============================================================================
-
-    PhaseVocoder.cpp
-    Created: 24 Mar 2011 4:52:04pm
-    Author:  Administrator
-
-  ==============================================================================
-*/
-
 #include "PhaseVocoder.h"
 
-
-PhaseVocoder::PhaseVocoder()
+PhaseVocoder::PhaseVocoder ()
 	:	pitch_ratio	( 1.0 ),
 		time_ratio	( 1.0 ),
 		isLocked	( true ),

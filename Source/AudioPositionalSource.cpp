@@ -1,47 +1,37 @@
-/*
-  ==============================================================================
-
-    AudioPositionalSource.cpp
-    Created: 24 Mar 2011 6:19:39pm
-    Author:  Administrator
-
-  ==============================================================================
-*/
-
 #include "AudioPositionalSource.h"
 
-AudioPositionalSource::AudioPositionalSource() 
+AudioPositionalSource::AudioPositionalSource () 
 {}
 
-AudioPositionalSource::~AudioPositionalSource() 
+AudioPositionalSource::~AudioPositionalSource () 
 {}
 
-void AudioPositionalSource::setNextReadPosition( int newPosition ) 
+void AudioPositionalSource::setNextReadPosition (int newPosition) 
 {}
 
-int64 AudioPositionalSource::getNextReadPosition() const 
+int64 AudioPositionalSource::getNextReadPosition () const 
 {
     return 0;
 }
 
-int64 AudioPositionalSource::getTotalLength() const 
+int64 AudioPositionalSource::getTotalLength () const 
 {
     return 0;
 }
 
-bool AudioPositionalSource::isLooping() const 
+bool AudioPositionalSource::isLooping () const 
 {
     return false;
 }
 
-void AudioPositionalSource::setLooping( bool shouldLoop ) 
+void AudioPositionalSource::setLooping (bool shouldLoop) 
 {}
 
-void AudioPositionalSource::prepareToPlay( int samplesPerBlockExpected, double sampleRate ) 
+void AudioPositionalSource::prepareToPlay (int samplesPerBlockExpected, double sampleRate) 
 {}
 
-void AudioPositionalSource::releaseResources() 
+void AudioPositionalSource::releaseResources ()
 {}
 
-void AudioPositionalSource::getNextAudioBlock( const AudioSourceChannelInfo &bufferToFill ) 
+void AudioPositionalSource::getNextAudioBlock (const AudioSourceChannelInfo &bufferToFill)
 {}

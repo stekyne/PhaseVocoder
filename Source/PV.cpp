@@ -471,10 +471,6 @@ void PV::processOffline( const float *input,
 				last_spec[bin][IMAG] = fFrame_spec[bin][IMAG] = temp[IMAG];
 			}
 
-			/*
-				End of Phase Vocoder Processing 
-			*/
-
 			// perform inverse FFT
 			fftwf_execute( front_frame_ifft );
 

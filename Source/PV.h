@@ -1,16 +1,9 @@
-//
-// Phase Vocoder Algorithm Class
-// By Stephen Kyne
-// Creation Date: 17th August 2010
-// 
-
 #include <stdio.h>
 #include <string>
 #include <cmath>
 
 #include "fftw3.h"	// fft library
 #include "../JuceLibraryCode/JuceHeader.h"
-
 
 class PV
 {
