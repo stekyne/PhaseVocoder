@@ -86,11 +86,6 @@ void AudioManager::audioDeviceIOCallback(
 		zeromem (outputChannelData[0], sizeof(float) * numSamples);
 		zeromem (outputChannelData[1], sizeof(float) * numSamples);
 	}
-
-	for (int chan = totalNumInputChannels; chan < totalNumOutputChannels; ++chan)
-	{
-		zeromem (outputChannelData[chan], sizeof(float) * numSamples);
-	}
 }
 
 void AudioManager::audioDeviceAboutToStart (AudioIODevice* device)
