@@ -20,6 +20,7 @@ AudioFileSource::~AudioFileSource ()
 void AudioFileSource::setFile (AudioFormatReader* reader)
 {
 	stop ();
-	audio_reader_source = new AudioFormatReaderSource (reader, true);
-	setSource (audio_reader_source);
+	auto newaudio_reader_source = new AudioFormatReaderSource (reader, true);
+    setSource (newaudio_reader_source);
+    audio_reader_source = newaudio_reader_source;
 }

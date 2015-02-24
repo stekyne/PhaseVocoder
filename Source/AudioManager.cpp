@@ -7,10 +7,7 @@ AudioManager::AudioManager ()
 		mixer_source (new MixerAudioSource),
 		audio_source (new AudioFileSource),
 		phase_vocoder (new PhaseVocoder),
-		audio_buf (new AudioSampleBuffer (2, MAX_BUF_SIZE)),
-		read_pos (0),
-		buf_cnt (0),
-		shouldLoop (false)
+		audio_buf (new AudioSampleBuffer (2, MAX_BUF_SIZE))
 {
 	const String result (device_manager->initialise (0, 2, 0, true));
 
