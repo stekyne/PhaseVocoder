@@ -13,14 +13,13 @@ AudioFileSource::AudioFileSource (AudioFormatReader* const reader)
 
 AudioFileSource::~AudioFileSource ()
 {
-	setSource (0);
+    stop ();
 	removeAllChangeListeners ();
 }
 
 void AudioFileSource::setFile (AudioFormatReader* reader)
 {
 	stop ();
-	setSource (0);
 	audio_reader_source = new AudioFormatReaderSource (reader, true);
 	setSource (audio_reader_source);
 }

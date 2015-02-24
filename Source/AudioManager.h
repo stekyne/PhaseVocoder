@@ -20,7 +20,7 @@ public:
 
 	void changeListenerCallback (ChangeBroadcaster *source);
 	
-	void setGain (double gain)
+	void setGain (float gain)
 	{
 		audio_source->setGain (gain);
 	}
@@ -47,12 +47,12 @@ public:
 		read_pos = audio_source->getNextReadPosition ();
 	}
 
-	void setPitch (double newValue)
+	void setPitch (float newValue)
 	{
 		phase_vocoder->setPitch (newValue);
 	}
 
-	void setTimeScale (double newValue)
+	void setTimeScale (float newValue)
 	{
 		phase_vocoder->setTimeScale (newValue);
 	}

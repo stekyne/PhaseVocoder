@@ -5,6 +5,8 @@
               jucerVersion="3.1.1">
   <MAINGROUP id="VPyLIg" name="PhaseVocoder">
     <GROUP id="{96E503CC-FCB0-7A50-084D-E9C41620D110}" name="Source">
+      <FILE id="mOcEyM" name="WaveformDisplayComponent.h" compile="0" resource="0"
+            file="Source/WaveformDisplayComponent.h"/>
       <FILE id="ARe9m5" name="AudioFileSource.cpp" compile="1" resource="0"
             file="Source/AudioFileSource.cpp"/>
       <FILE id="rXqYMX" name="AudioFileSource.h" compile="0" resource="0"
@@ -12,10 +14,6 @@
       <FILE id="gOLP7y" name="AudioManager.cpp" compile="1" resource="0"
             file="Source/AudioManager.cpp"/>
       <FILE id="YvLti9" name="AudioManager.h" compile="0" resource="0" file="Source/AudioManager.h"/>
-      <FILE id="tMI5QC" name="AudioPositionalSource.cpp" compile="1" resource="0"
-            file="Source/AudioPositionalSource.cpp"/>
-      <FILE id="Ii2At7" name="AudioPositionalSource.h" compile="0" resource="0"
-            file="Source/AudioPositionalSource.h"/>
       <FILE id="jKtLhi" name="MainWindow.cpp" compile="1" resource="0" file="Source/MainWindow.cpp"/>
       <FILE id="OeOnr7" name="MainWindow.h" compile="0" resource="0" file="Source/MainWindow.h"/>
       <FILE id="ZVvYGX" name="PhaseVocoder.cpp" compile="1" resource="0"
@@ -27,8 +25,6 @@
             file="Source/PVMainComponent.cpp"/>
       <FILE id="C0IFXd" name="PVMainComponent.h" compile="0" resource="0"
             file="Source/PVMainComponent.h"/>
-      <FILE id="pnyqGV" name="MainComponent.cpp" compile="1" resource="0"
-            file="Source/MainComponent.cpp"/>
       <FILE id="j66DId" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
     </GROUP>
   </MAINGROUP>
@@ -36,7 +32,8 @@
     <VS2015 targetFolder="Builds/VisualStudio2015" externalLibraries="libfftw3f-3.lib">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" winWarningLevel="4" generateManifest="1" winArchitecture="32-bit"
-                       isDebug="1" optimisation="1" targetName="PhaseVocoder" headerPath="G:\Programming\libraries\fftw3.3.4_32"/>
+                       isDebug="1" optimisation="1" targetName="PhaseVocoder" headerPath="G:\Programming\libraries\fftw3.3.4_32"
+                       libraryPath="G:\Programming\libraries\fftw3.3.4_32"/>
         <CONFIGURATION name="Release" winWarningLevel="4" generateManifest="1" winArchitecture="32-bit"
                        isDebug="0" optimisation="2" targetName="PhaseVocoder" headerPath="G:\Programming\libraries\fftw3.3.4_32"
                        libraryPath="G:\Programming\libraries\fftw3.3.4_32"/>
@@ -59,7 +56,8 @@
     <VS2013 targetFolder="Builds/VisualStudio2013" externalLibraries="libfftw3f-3.lib">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" winWarningLevel="4" generateManifest="1" winArchitecture="32-bit"
-                       isDebug="1" optimisation="1" targetName="PhaseVocoder" headerPath="G:\Programming\libraries\fftw3.3.4_32"/>
+                       isDebug="1" optimisation="1" targetName="PhaseVocoder" headerPath="G:\Programming\libraries\fftw3.3.4_32"
+                       libraryPath="G:\Programming\libraries\fftw3.3.4_32"/>
         <CONFIGURATION name="Release" winWarningLevel="4" generateManifest="1" winArchitecture="32-bit"
                        isDebug="0" optimisation="2" targetName="PhaseVocoder" headerPath="G:\Programming\libraries\fftw3.3.4_32"
                        libraryPath="G:\Programming\libraries\fftw3.3.4_32"/>
@@ -82,7 +80,8 @@
     <VS2012 targetFolder="Builds/VisualStudio2012" externalLibraries="libfftw3f-3.lib">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" winWarningLevel="4" generateManifest="1" winArchitecture="32-bit"
-                       isDebug="1" optimisation="1" targetName="PhaseVocoder" headerPath="G:\Programming\libraries\fftw3.3.4_32"/>
+                       isDebug="1" optimisation="1" targetName="PhaseVocoder" headerPath="G:\Programming\libraries\fftw3.3.4_32"
+                       libraryPath="G:\Programming\libraries\fftw3.3.4_32"/>
         <CONFIGURATION name="Release" winWarningLevel="4" generateManifest="1" winArchitecture="32-bit"
                        isDebug="0" optimisation="2" targetName="PhaseVocoder" headerPath="G:\Programming\libraries\fftw3.3.4_32"
                        libraryPath="G:\Programming\libraries\fftw3.3.4_32"/>

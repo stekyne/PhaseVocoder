@@ -295,9 +295,6 @@
     <ClCompile Include="..\..\Source\AudioManager.cpp">
       <Filter>PhaseVocoder\Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source\AudioPositionalSource.cpp">
-      <Filter>PhaseVocoder\Source</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source\MainWindow.cpp">
       <Filter>PhaseVocoder\Source</Filter>
     </ClCompile>
@@ -308,9 +305,6 @@
       <Filter>PhaseVocoder\Source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\PVMainComponent.cpp">
-      <Filter>PhaseVocoder\Source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source\MainComponent.cpp">
       <Filter>PhaseVocoder\Source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\Main.cpp">
@@ -1500,13 +1494,13 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Source\WaveformDisplayComponent.h">
+      <Filter>PhaseVocoder\Source</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Source\AudioFileSource.h">
       <Filter>PhaseVocoder\Source</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\AudioManager.h">
-      <Filter>PhaseVocoder\Source</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\AudioPositionalSource.h">
       <Filter>PhaseVocoder\Source</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\MainWindow.h">

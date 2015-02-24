@@ -40,7 +40,7 @@ AudioManager::~AudioManager ()
 }
 
 void AudioManager::audioDeviceIOCallback( 
-    const float **inputChannelData, int totalNumInputChannels, 
+    const float** /*inputChannelData*/, int totalNumInputChannels, 
     float **outputChannelData, int totalNumOutputChannels, 
     int numSamples)
 {
@@ -64,7 +64,8 @@ void AudioManager::audioDeviceIOCallback(
         buf_cnt += numSamples;
 		if (buf_cnt >= 256)
 		{
-			int64 div = floorl (buf_cnt / 256);
+			int64 div = floor (buf_cnt / 256);
+            // FIXME suspect code, needs investigating
 			read_pos += 256 * div * phase_vocoder->getTimeScale ();
 			buf_cnt %= 256;
 		}
@@ -74,8 +75,8 @@ void AudioManager::audioDeviceIOCallback(
 		output_buf.numSamples = numSamples;
 		phase_vocoder->getNextAudioBlock (output_buf);
 
-		const float *dataLeft = audio_buf->getSampleData (0, 0);
-		const float *dataRight = audio_buf->getSampleData (1, 0);
+		auto dataLeft = audio_buf->getReadPointer (0, 0);
+		auto dataRight = audio_buf->getReadPointer (1, 0);
 
 		for (int s = 0; s < numSamples; ++s)
 		{
@@ -95,7 +96,7 @@ void AudioManager::audioDeviceIOCallback(
 	}
 }
 
-void AudioManager::audioDeviceAboutToStart (AudioIODevice *device)
+void AudioManager::audioDeviceAboutToStart (AudioIODevice* device)
 {
 	audio_source->prepareToPlay (device->getCurrentBufferSizeSamples(),
 								 device->getCurrentSampleRate());
@@ -106,7 +107,7 @@ void AudioManager::audioDeviceStopped ()
 	audio_source->releaseResources ();
 }
 
-void AudioManager::changeListenerCallback (ChangeBroadcaster *source)
+void AudioManager::changeListenerCallback (ChangeBroadcaster* /*source*/)
 {
 	if (audio_source->hasStreamFinished ())
 	{
@@ -129,4 +130,4 @@ ScopedPointer<AudioDeviceSelectorComponent> AudioManager::getSelector (
 	return deviceSelector;
 }
 
-juce_ImplementSingleton( AudioManager );
+juce_ImplementSingleton (AudioManager);

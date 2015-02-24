@@ -1,20 +1,18 @@
 /*
   ==============================================================================
 
-  This is an automatically generated file created by the Jucer!
-
-  Creation date:  25 Mar 2011 11:58:07am
+  This is an automatically generated GUI class created by the Introjucer!
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
   and re-saved.
 
-  Jucer version: 1.12
+  Created with Introjucer version: 3.1.1
 
   ------------------------------------------------------------------------------
 
-  The Jucer is part of the JUCE library - "Jules' Utility Class Extensions"
-  Copyright 2004-6 by Raw Material Software ltd.
+  The Introjucer is part of the JUCE library - "Jules' Utility Class Extensions"
+  Copyright 2004-13 by Raw Material Software Ltd.
 
   ==============================================================================
 */
@@ -30,46 +28,32 @@
 
 //==============================================================================
 PVMainComponent::PVMainComponent ()
-    : header_label1 (0),
-      details_group1 (0),
-      cpu_label1 (0),
-      settings_btn1 (0),
-      play_btn1 (0),
-      stop_btn1 (0),
-      playback_pos_slider1 (0),
-      label (0),
-      vol_slider1 (0),
-      label2 (0),
-      pitch_slider1 (0),
-      label3 (0),
-      time_slider1 (0),
-      repeat_btn1 (0),
-      phaselock_btn1 (0)
 {
-    addAndMakeVisible (header_label1 = new Label ("header_label1", "Phase Vocoder"));
-    header_label1->setFont (Font (22.0000f, Font::bold));
+    addAndMakeVisible (header_label1 = new Label ("header_label1",
+                                                  TRANS("Phase Vocoder")));
+    header_label1->setFont (Font (22.00f, Font::bold));
     header_label1->setJustificationType (Justification::topLeft);
     header_label1->setEditable (false, false, false);
     header_label1->setColour (Label::textColourId, Colour (0xff414141));
     header_label1->setColour (TextEditor::textColourId, Colours::black);
-    header_label1->setColour (TextEditor::backgroundColourId, Colour (0x0));
+    header_label1->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
     addAndMakeVisible (details_group1 = new GroupComponent ("details_group1",
-                                                            "Info"));
+                                                            TRANS("Info")));
     details_group1->setColour (GroupComponent::outlineColourId, Colour (0xff727272));
 
     addAndMakeVisible (cpu_label1 = new Label ("cpu_label1",
-                                               "CPU: 100%"));
-    cpu_label1->setFont (Font ("Arial", 14.0000f, Font::bold));
+                                               TRANS("CPU: 100%")));
+    cpu_label1->setFont (Font ("Arial", 14.00f, Font::bold));
     cpu_label1->setJustificationType (Justification::centred);
     cpu_label1->setEditable (false, false, false);
     cpu_label1->setColour (Label::textColourId, Colour (0xff282828));
     cpu_label1->setColour (TextEditor::textColourId, Colours::black);
-    cpu_label1->setColour (TextEditor::backgroundColourId, Colour (0x0));
+    cpu_label1->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
     addAndMakeVisible (settings_btn1 = new TextButton ("settings_btn1"));
-    settings_btn1->setTooltip ("Change audio and FFT settings here");
-    settings_btn1->setButtonText ("Audio Setup");
+    settings_btn1->setTooltip (TRANS("Change audio and FFT settings here"));
+    settings_btn1->setButtonText (TRANS("Audio Setup"));
     settings_btn1->addListener (this);
     settings_btn1->setColour (TextButton::buttonColourId, Colour (0xff727272));
     settings_btn1->setColour (TextButton::buttonOnColourId, Colour (0xff377a70));
@@ -77,80 +61,83 @@ PVMainComponent::PVMainComponent ()
     settings_btn1->setColour (TextButton::textColourOffId, Colours::white);
 
     addAndMakeVisible (play_btn1 = new TextButton ("play_btn1"));
-    play_btn1->setTooltip ("Play the sound file currently loaded, does nothing if no file is loaded");
-    play_btn1->setButtonText ("Play");
+    play_btn1->setTooltip (TRANS("Play the sound file currently loaded, does nothing if no file is loaded"));
+    play_btn1->setButtonText (TRANS("Play"));
     play_btn1->setConnectedEdges (Button::ConnectedOnRight);
     play_btn1->addListener (this);
     play_btn1->setColour (TextButton::buttonColourId, Colour (0xff3f9c48));
     play_btn1->setColour (TextButton::buttonOnColourId, Colour (0xffe6df64));
 
     addAndMakeVisible (stop_btn1 = new TextButton ("stop_btn1"));
-    stop_btn1->setTooltip ("Stop playing the current sound file, does nothing if no file is loaded");
-    stop_btn1->setButtonText ("Stop");
+    stop_btn1->setTooltip (TRANS("Stop playing the current sound file, does nothing if no file is loaded"));
+    stop_btn1->setButtonText (TRANS("Stop"));
     stop_btn1->setConnectedEdges (Button::ConnectedOnLeft);
     stop_btn1->addListener (this);
     stop_btn1->setColour (TextButton::buttonColourId, Colour (0xffa44444));
     stop_btn1->setColour (TextButton::buttonOnColourId, Colour (0xffe6df64));
 
     addAndMakeVisible (playback_pos_slider1 = new Slider ("playback_pos_slider1"));
-    playback_pos_slider1->setTooltip ("The current playback position of the sound file");
+    playback_pos_slider1->setTooltip (TRANS("The current playback position of the sound file"));
     playback_pos_slider1->setRange (0, 1, 0);
     playback_pos_slider1->setSliderStyle (Slider::LinearHorizontal);
     playback_pos_slider1->setTextBoxStyle (Slider::TextBoxAbove, false, 90, 20);
     playback_pos_slider1->addListener (this);
 
-    addAndMakeVisible (label = new Label ("new label", "Volume"));
-    label->setFont (Font (15.0000f, Font::plain));
+    addAndMakeVisible (label = new Label ("new label",
+                                          TRANS("Volume")));
+    label->setFont (Font (15.00f, Font::plain));
     label->setJustificationType (Justification::centredLeft);
     label->setEditable (false, false, false);
     label->setColour (TextEditor::textColourId, Colours::black);
-    label->setColour (TextEditor::backgroundColourId, Colour (0x0));
+    label->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
     addAndMakeVisible (vol_slider1 = new Slider ("vol_slider1"));
-    vol_slider1->setTooltip ("Adjusts the volume of the loaded sound file");
+    vol_slider1->setTooltip (TRANS("Adjusts the volume of the loaded sound file"));
     vol_slider1->setRange (0, 1, 0.001);
     vol_slider1->setSliderStyle (Slider::LinearHorizontal);
     vol_slider1->setTextBoxStyle (Slider::TextBoxRight, false, 40, 15);
     vol_slider1->addListener (this);
 
-    addAndMakeVisible (label2 = new Label ("new label", "Pitch"));
-    label2->setFont (Font (15.0000f, Font::plain));
+    addAndMakeVisible (label2 = new Label ("new label",
+                                           TRANS("Pitch")));
+    label2->setFont (Font (15.00f, Font::plain));
     label2->setJustificationType (Justification::centredLeft);
     label2->setEditable (false, false, false);
     label2->setColour (TextEditor::textColourId, Colours::black);
-    label2->setColour (TextEditor::backgroundColourId, Colour (0x0));
+    label2->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
     addAndMakeVisible (pitch_slider1 = new Slider ("pitch_slider1"));
-    pitch_slider1->setTooltip ("Adjusts the pitch of the loaded sound file, the setting is a ratio so 1:1 is the original playback speed");
+    pitch_slider1->setTooltip (TRANS("Adjusts the pitch of the loaded sound file, the setting is a ratio so 1:1 is the original playback speed"));
     pitch_slider1->setRange (0.5, 2, 0.001);
     pitch_slider1->setSliderStyle (Slider::LinearHorizontal);
     pitch_slider1->setTextBoxStyle (Slider::TextBoxRight, false, 40, 15);
     pitch_slider1->addListener (this);
 
-    addAndMakeVisible (label3 = new Label ("new label", "Time"));
-    label3->setFont (Font (15.0000f, Font::plain));
+    addAndMakeVisible (label3 = new Label ("new label",
+                                           TRANS("Time")));
+    label3->setFont (Font (15.00f, Font::plain));
     label3->setJustificationType (Justification::centredLeft);
     label3->setEditable (false, false, false);
     label3->setColour (TextEditor::textColourId, Colours::black);
-    label3->setColour (TextEditor::backgroundColourId, Colour (0x0));
+    label3->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
     addAndMakeVisible (time_slider1 = new Slider ("time_slider1"));
-    time_slider1->setTooltip ("Adjusts the length of the loaded sound file, the setting is a ratio so 1:1 is the original playback length");
+    time_slider1->setTooltip (TRANS("Adjusts the length of the loaded sound file, the setting is a ratio so 1:1 is the original playback length"));
     time_slider1->setRange (0.001, 2, 0.001);
     time_slider1->setSliderStyle (Slider::LinearHorizontal);
     time_slider1->setTextBoxStyle (Slider::TextBoxRight, false, 40, 15);
     time_slider1->addListener (this);
 
     addAndMakeVisible (repeat_btn1 = new ToggleButton ("repeat_btn1"));
-    repeat_btn1->setTooltip ("Click to repeatedly play the audio file, when the play button is pressed");
-    repeat_btn1->setButtonText ("Repeat");
+    repeat_btn1->setTooltip (TRANS("Click to repeatedly play the audio file, when the play button is pressed"));
+    repeat_btn1->setButtonText (TRANS("Repeat"));
     repeat_btn1->addListener (this);
 
     addAndMakeVisible (phaselock_btn1 = new ToggleButton ("phaselock_btn1"));
-    phaselock_btn1->setTooltip ("To turn phase locking on or off for the algorithm");
-    phaselock_btn1->setButtonText ("Phase Lock");
+    phaselock_btn1->setTooltip (TRANS("To turn phase locking on or off for the algorithm"));
+    phaselock_btn1->setButtonText (TRANS("Phase Lock"));
     phaselock_btn1->addListener (this);
-    phaselock_btn1->setToggleState (true, false);
+    phaselock_btn1->setToggleState (true, dontSendNotification);
 
 
     //[UserPreSize]
@@ -196,21 +183,21 @@ PVMainComponent::~PVMainComponent()
 
     //[/Destructor_pre]
 
-    deleteAndZero (header_label1);
-    deleteAndZero (details_group1);
-    deleteAndZero (cpu_label1);
-    deleteAndZero (settings_btn1);
-    deleteAndZero (play_btn1);
-    deleteAndZero (stop_btn1);
-    deleteAndZero (playback_pos_slider1);
-    deleteAndZero (label);
-    deleteAndZero (vol_slider1);
-    deleteAndZero (label2);
-    deleteAndZero (pitch_slider1);
-    deleteAndZero (label3);
-    deleteAndZero (time_slider1);
-    deleteAndZero (repeat_btn1);
-    deleteAndZero (phaselock_btn1);
+    header_label1 = nullptr;
+    details_group1 = nullptr;
+    cpu_label1 = nullptr;
+    settings_btn1 = nullptr;
+    play_btn1 = nullptr;
+    stop_btn1 = nullptr;
+    playback_pos_slider1 = nullptr;
+    label = nullptr;
+    vol_slider1 = nullptr;
+    label2 = nullptr;
+    pitch_slider1 = nullptr;
+    label3 = nullptr;
+    time_slider1 = nullptr;
+    repeat_btn1 = nullptr;
+    phaselock_btn1 = nullptr;
 
 
     //[Destructor]. You can add your own custom destruction code here..
@@ -226,10 +213,10 @@ void PVMainComponent::paint (Graphics& g)
     g.fillAll (Colour (0xff3f3f3f));
 
     g.setColour (Colour (0xff8fbcc7));
-    g.fillRoundedRectangle (10.0f, 10.0f, (float) (getWidth() - 20), (float) (getHeight() - 20), 10.0000f);
+    g.fillRoundedRectangle (10.0f, 10.0f, static_cast<float> (getWidth() - 20), static_cast<float> (getHeight() - 20), 10.000f);
 
     g.setColour (Colour (0xff8e8e8e));
-    g.drawRoundedRectangle (10.0f, 10.0f, (float) (getWidth() - 20), (float) (getHeight() - 20), 10.0000f, 6.0000f);
+    g.drawRoundedRectangle (10.0f, 10.0f, static_cast<float> (getWidth() - 20), static_cast<float> (getHeight() - 20), 10.000f, 6.000f);
 
     //[UserPaint] Add your own custom painting code here..
     //[/UserPaint]
@@ -237,6 +224,9 @@ void PVMainComponent::paint (Graphics& g)
 
 void PVMainComponent::resized()
 {
+    //[UserPreResize] Add your own custom resize code here..
+    //[/UserPreResize]
+
     header_label1->setBounds (16, 16, 160, 24);
     details_group1->setBounds (448, 16, 136, 88);
     cpu_label1->setBounds (456, 66, 120, 24);
@@ -322,7 +312,7 @@ void PVMainComponent::sliderValueChanged (Slider* sliderThatWasMoved)
     {
         //[UserSliderCode_playback_pos_slider1] -- add your slider handling code here..
 
-		audio_manager->setPosition( playback_pos_slider1->getValue() );
+		audio_manager->setPosition ((float)playback_pos_slider1->getValue());
 
         //[/UserSliderCode_playback_pos_slider1]
     }
@@ -330,7 +320,7 @@ void PVMainComponent::sliderValueChanged (Slider* sliderThatWasMoved)
     {
         //[UserSliderCode_vol_slider1] -- add your slider handling code here..
 
-		audio_manager->setGain( (float)vol_slider1->getValue() );
+		audio_manager->setGain ((float)vol_slider1->getValue());
 
         //[/UserSliderCode_vol_slider1]
     }
@@ -338,7 +328,7 @@ void PVMainComponent::sliderValueChanged (Slider* sliderThatWasMoved)
     {
         //[UserSliderCode_pitch_slider1] -- add your slider handling code here..
 
-		audio_manager->setPitch( pitch_slider1->getValue() );
+		audio_manager->setPitch ((float)pitch_slider1->getValue());
 
         //[/UserSliderCode_pitch_slider1]
     }
@@ -346,7 +336,7 @@ void PVMainComponent::sliderValueChanged (Slider* sliderThatWasMoved)
     {
         //[UserSliderCode_time_slider1] -- add your slider handling code here..
 
-		audio_manager->setTimeScale( time_slider1->getValue() );
+		audio_manager->setTimeScale ((float)time_slider1->getValue());
 
         //[/UserSliderCode_time_slider1]
     }
@@ -393,16 +383,17 @@ void PVMainComponent::filenameComponentChanged( FilenameComponent* )
 
 //==============================================================================
 #if 0
-/*  -- Jucer information section --
+/*  -- Introjucer information section --
 
-    This is where the Jucer puts all of its metadata, so don't change anything in here!
+    This is where the Introjucer stores the metadata that describe this GUI layout, so
+    make changes in here at your peril!
 
 BEGIN_JUCER_METADATA
 
 <JUCER_COMPONENT documentType="Component" className="PVMainComponent" componentName=""
                  parentClasses="public Component, public FilenameComponentListener, public Timer"
                  constructorParams="" variableInitialisers="" snapPixels="8" snapActive="1"
-                 snapShown="0" overlayOpacity="0.330000013" fixedSize="1" initialWidth="620"
+                 snapShown="0" overlayOpacity="0.330" fixedSize="1" initialWidth="620"
                  initialHeight="400">
   <BACKGROUND backgroundColour="ff3f3f3f">
     <ROUNDRECT pos="10 10 20M 20M" cornerSize="10" fill="solid: ff8fbcc7" hasStroke="1"
@@ -478,3 +469,7 @@ BEGIN_JUCER_METADATA
 END_JUCER_METADATA
 */
 #endif
+
+
+//[EndFile] You can add extra defines here...
+//[/EndFile]

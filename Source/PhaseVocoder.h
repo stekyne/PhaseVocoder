@@ -14,20 +14,14 @@ public:
 	void releaseResources ();
 	void getNextAudioBlock (const AudioSourceChannelInfo &bufferToFill);
 
-	void reset ()
-	{
-		//pv_left->reset();
-		//pv_right->reset();
-	}
-
-	void setPitch (const double pitch_ratio)
+	void setPitch (float pitch_ratio)
 	{
 		this->pitch_ratio = pitch_ratio;
 		pv_left->setPitch (pitch_ratio);
 		pv_right->setPitch (pitch_ratio);
 	}
 	
-	void setTimeScale (const double time_ratio)
+	void setTimeScale (float time_ratio)
 	{
 		this->time_ratio = time_ratio;
 		pv_left->setTimeScale (time_ratio);
@@ -60,10 +54,10 @@ private:
 	ScopedPointer<PV> pv_left;
 	ScopedPointer<PV> pv_right;
 
-	double pitch_ratio, time_ratio;
-	bool isLocked;
+    float pitch_ratio {1.f}, time_ratio {1.f};
+    bool isLocked {true};
 
-	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR( PhaseVocoder );
+	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PhaseVocoder);
 };
 
 #endif

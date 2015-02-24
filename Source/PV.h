@@ -2,7 +2,7 @@
 #include <string>
 #include <cmath>
 
-#include "fftw3.h"	// fft library
+#include "fftw3.h"
 #include "../JuceLibraryCode/JuceHeader.h"
 
 class PV

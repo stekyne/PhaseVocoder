@@ -41,6 +41,7 @@
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\Debug\</OutDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">PhaseVocoder</TargetName>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</GenerateManifest>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(LibraryPath);G:\Programming\libraries\fftw3.3.4_32</LibraryPath>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\Release\</OutDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">PhaseVocoder</TargetName>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</GenerateManifest>
@@ -82,6 +83,7 @@
       <SubSystem>Windows</SubSystem>
       <TargetMachine>MachineX86</TargetMachine>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <AdditionalLibraryDirectories>G:\Programming\libraries\fftw3.3.4_32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <LargeAddressAware>true</LargeAddressAware>
       <AdditionalDependencies>libfftw3f-3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
@@ -137,12 +139,10 @@
   <ItemGroup>
     <ClCompile Include="..\..\Source\AudioFileSource.cpp"/>
     <ClCompile Include="..\..\Source\AudioManager.cpp"/>
-    <ClCompile Include="..\..\Source\AudioPositionalSource.cpp"/>
     <ClCompile Include="..\..\Source\MainWindow.cpp"/>
     <ClCompile Include="..\..\Source\PhaseVocoder.cpp"/>
     <ClCompile Include="..\..\Source\PV.cpp"/>
     <ClCompile Include="..\..\Source\PVMainComponent.cpp"/>
-    <ClCompile Include="..\..\Source\MainComponent.cpp"/>
     <ClCompile Include="..\..\Source\Main.cpp"/>
     <ClCompile Include="..\..\..\JUCE\modules\juce_audio_basics\buffers\juce_AudioDataConverters.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
@@ -1235,9 +1235,9 @@
     <ClCompile Include="..\..\..\JUCE\modules\juce_opengl\juce_opengl.cpp"/>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Source\WaveformDisplayComponent.h"/>
     <ClInclude Include="..\..\Source\AudioFileSource.h"/>
     <ClInclude Include="..\..\Source\AudioManager.h"/>
-    <ClInclude Include="..\..\Source\AudioPositionalSource.h"/>
     <ClInclude Include="..\..\Source\MainWindow.h"/>
     <ClInclude Include="..\..\Source\PhaseVocoder.h"/>
     <ClInclude Include="..\..\Source\PV.h"/>

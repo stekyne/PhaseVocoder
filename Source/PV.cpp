@@ -168,10 +168,10 @@ void PV::process( const float *input,
 				int	  iposa, iposb;			// some variables for the linear
 				float frac;					// interpolation
 	
-				read_posf = ain_read_pos;
+				read_posf = (float)ain_read_pos;
 				read_posb = (ain_read_pos - hop_size_a < 0) 
-							? audioIn_size - hop_size_a:
-							  ain_read_pos - hop_size_a;
+							? (float)(audioIn_size - hop_size_a):
+							  (float)(ain_read_pos - hop_size_a);
 	
 				for( int i=0; i < window_size; ++i ) 
 				{	
@@ -327,7 +327,7 @@ void PV::process( const float *input,
 			}
 			
 			// accumulate overlapping windows and scale output to prevent clipping
-			output[n] *= 1.95/3.0;
+			output[n] *= (float)(1.95/3.0f);
 
 			hop_count++;
 		}
@@ -366,8 +366,8 @@ void PV::processOffline( const float *input,
 			int	  iposa, iposb;			// some variables for the linear
 			float frac;					// interpolation
 	
-			read_posf = hop_size_a;
-			read_posb = 0;
+			read_posf = (float)hop_size_a;
+			read_posb = 0.f;
 	
 			for( int i=0; i < window_size; ++i ) 
 			{	
@@ -403,7 +403,7 @@ void PV::processOffline( const float *input,
 			/* 
 				Phase Vocoder Processing 	
 			*/
-			float phase[2], temp[2], div;
+			double phase[2], temp[2], div;
 
 			for( int bin=0; bin < bin_count; ++bin ) 
 			{
@@ -419,8 +419,8 @@ void PV::processOffline( const float *input,
 				temp[IMAG] =  bFrame_spec[bin][REAL] * phase[IMAG] - bFrame_spec[bin][IMAG] * phase[REAL];
 					
 				// assign the result to the back frame
-				bFrame_spec[bin][REAL] = temp[REAL];
-				bFrame_spec[bin][IMAG] = temp[IMAG];
+				bFrame_spec[bin][REAL] = (float)temp[REAL];
+				bFrame_spec[bin][IMAG] = (float)temp[IMAG];
 			}
 
 			for( int bin=0; bin < bin_count; ++bin ) 
@@ -457,7 +457,7 @@ void PV::processOffline( const float *input,
 				temp[REAL] += 1e-20;	// must not be zero
 					
 				// get the phases for temp
-				div = 1.0 / hypotf( temp[REAL], temp[IMAG] );
+				div = 1.0 / hypot (temp[REAL], temp[IMAG]);
 				phase[REAL] = temp[REAL] * div;
 				phase[IMAG] = temp[IMAG] * div;
 	    
@@ -467,8 +467,8 @@ void PV::processOffline( const float *input,
 				temp[IMAG] = fFrame_spec[bin][REAL] * phase[IMAG] + fFrame_spec[bin][IMAG] * phase[REAL];
 
 				// output and store result
-				last_spec[bin][REAL] = fFrame_spec[bin][REAL] = temp[REAL];
-				last_spec[bin][IMAG] = fFrame_spec[bin][IMAG] = temp[IMAG];
+				last_spec[bin][REAL] = fFrame_spec[bin][REAL] = (float)temp[REAL];
+				last_spec[bin][IMAG] = fFrame_spec[bin][IMAG] = (float)temp[IMAG];
 			}
 
 			// perform inverse FFT
@@ -509,7 +509,7 @@ void PV::processOffline( const float *input,
 		}
 			
 		// accumulate overlapping windows and scale output to prevent clipping
-		output[n] *= 1.95/3.0;
+		output[n] *= (float)(1.95/3.0);
 			
 		hop_count++;
 	}

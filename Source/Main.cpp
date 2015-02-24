@@ -8,7 +8,7 @@ public:
 
     ~PhaseVocoderApplication () {}
 
-    void initialise (const String& commandLine)
+    void initialise (const String& /*commandLine*/)
     {
         mainWindow = new MainAppWindow;
     }
@@ -38,7 +38,7 @@ public:
         return true;
     }
 
-    void anotherInstanceStarted (const String& commandLine)
+    void anotherInstanceStarted (const String& /*commandLine*/)
     {
     }
 
