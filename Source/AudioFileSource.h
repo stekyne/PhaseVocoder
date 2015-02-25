@@ -12,8 +12,13 @@ public:
 
 	void setFile (AudioFormatReader* reader);
 
+    void setLooping (bool shouldLoop)
+    {
+        audioReaderSource->setLooping (shouldLoop);
+    }
+
 private:
-	ScopedPointer<AudioFormatReaderSource> audio_reader_source;
+    ScopedPointer<AudioFormatReaderSource> audioReaderSource;
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioFileSource);
 };

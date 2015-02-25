@@ -259,10 +259,10 @@ void PVMainComponent::buttonClicked (Button* buttonThatWasClicked)
     {
         //[UserButtonCode_settings_btn1] -- add your button handler code here..
 
-		DialogWindow::showModalDialog(	"Audio Device Settings",
-										audio_manager->getSelector(),
+		DialogWindow::showModalDialog ("Audio Device Settings",
+									    audio_manager->getSelector(),
 										this, Colours::grey,
-										true );
+										true);
 
         //[/UserButtonCode_settings_btn1]
     }
@@ -270,7 +270,7 @@ void PVMainComponent::buttonClicked (Button* buttonThatWasClicked)
     {
         //[UserButtonCode_play_btn1] -- add your button handler code here..
 
-		audio_manager->play();
+		audio_manager->play ();
 
         //[/UserButtonCode_play_btn1]
     }
@@ -278,7 +278,7 @@ void PVMainComponent::buttonClicked (Button* buttonThatWasClicked)
     {
         //[UserButtonCode_stop_btn1] -- add your button handler code here..
 
-		audio_manager->stop();
+		audio_manager->stop ();
 
         //[/UserButtonCode_stop_btn1]
     }
@@ -286,7 +286,7 @@ void PVMainComponent::buttonClicked (Button* buttonThatWasClicked)
     {
         //[UserButtonCode_repeat_btn1] -- add your button handler code here..
 
-		audio_manager->loop( repeat_btn1->getToggleState() );
+		audio_manager->setLooping (repeat_btn1->getToggleState ());
 
         //[/UserButtonCode_repeat_btn1]
     }
@@ -294,7 +294,7 @@ void PVMainComponent::buttonClicked (Button* buttonThatWasClicked)
     {
         //[UserButtonCode_phaselock_btn1] -- add your button handler code here..
 
-		audio_manager->setPhaseLock( phaselock_btn1->getToggleState() );
+		audio_manager->setPhaseLock (phaselock_btn1->getToggleState ());
 
         //[/UserButtonCode_phaselock_btn1]
     }
@@ -349,32 +349,30 @@ void PVMainComponent::sliderValueChanged (Slider* sliderThatWasMoved)
 
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
 
-void PVMainComponent::timerCallback()
+void PVMainComponent::timerCallback ()
 {
-	double position = audio_manager->getPlaybackPosition();
+	const double position = audio_manager->getPlaybackPosition ();
 
-	playback_pos_slider1->setValue( position );
-	waveform_display->setPosition( position );
+	playback_pos_slider1->setValue (position);
+	waveform_display->setPosition (position);
 
-	cpu_label1->setText( "CPU: " + String( audio_manager->getCPU(), 2 )
+	cpu_label1->setText ("CPU: " + String (audio_manager->getCPU (), 2)
 						 + "%", NotificationType::sendNotification);
 }
 
-void PVMainComponent::filenameComponentChanged( FilenameComponent* )
+void PVMainComponent::filenameComponentChanged (FilenameComponent*)
 {
-	// this is called when the user changes the filename in the file chooser box
-	File audioFile( fileChooser->getCurrentFile() );
+	File audioFile (fileChooser->getCurrentFile());
 
-    // create a new file source from the file..
-    AudioFormatReader* reader = format_manager->createReaderFor( audioFile );
+    AudioFormatReader* reader = format_manager->createReaderFor (audioFile);
 
-    if( reader != 0 )
+    if (reader != nullptr)
     {
-		audio_manager->setFileSource( reader );
-		waveform_display->setFile( audioFile );
+		audio_manager->setFileSource (reader);
+		waveform_display->setFile (audioFile);
 
-		playback_pos_slider1->setRange( 0.0f, audio_manager->getPlaybackLength() );
-		playback_pos_slider1->setValue( 0.0f );
+		playback_pos_slider1->setRange (0.0f, audio_manager->getPlaybackLength ());
+		playback_pos_slider1->setValue (0.0f);
     }
 }
 

@@ -22,74 +22,74 @@ public:
 	
 	void setGain (float gain)
 	{
-		audio_source->setGain (gain);
+        audioSource->setGain (gain);
 	}
 
 	void play ()
 	{
-		audio_source->start ();
-		read_pos = audio_source->getNextReadPosition ();
+        audioSource->start ();
+        read_pos = audioSource->getNextReadPosition ();
 	}
 
 	void stop ()
 	{
-		audio_source->stop();
+        audioSource->stop ();
 	}
 
-	void loop (bool shouldLoop)
+	void setLooping (bool shouldLoop)
 	{
-        this->shouldLoop = shouldLoop;
+        audioSource->setLooping (shouldLoop);
 	}
 
 	void setPosition (double pos)
 	{
-		audio_source->setPosition (pos);
-		read_pos = audio_source->getNextReadPosition ();
+		audioSource->setPosition (pos);
+        read_pos = audioSource->getNextReadPosition ();
 	}
 
 	void setPitch (float newValue)
 	{
-		phase_vocoder->setPitch (newValue);
+        phaseVocoder->setPitch (newValue);
 	}
 
 	void setTimeScale (float newValue)
 	{
-		phase_vocoder->setTimeScale (newValue);
+        phaseVocoder->setTimeScale (newValue);
 	}
 
 	void setPhaseLock (bool state)
 	{
-		phase_vocoder->setPhaseLock (state);
+        phaseVocoder->setPhaseLock (state);
 	}
 
 	double getPlaybackPosition () const
 	{
-		return audio_source->getCurrentPosition ();	
+        return audioSource->getCurrentPosition ();
 	}
 
 	double getPlaybackLength () const
 	{
-		return audio_source->getLengthInSeconds ();
+        return audioSource->getLengthInSeconds ();
 	}
 
 	void setFileSource (AudioFormatReader* const reader)
 	{
-		audio_source->setFile (reader);
+        audioSource->setFile (reader);
 	}
 
     ScopedPointer<AudioDeviceSelectorComponent> getSelector (
         int width = 500, int height = 400);
 
-	const double getCPU () const { return device_manager->getCpuUsage (); }
+    const double getCPU () const { return deviceManager->getCpuUsage (); }
 
 	juce_DeclareSingleton (AudioManager, true);
 
 private:
-	ScopedPointer<AudioDeviceManager> device_manager;
-	ScopedPointer<AudioFileSource> audio_source;
-	ScopedPointer<AudioSampleBuffer> audio_buf;
-	ScopedPointer<PhaseVocoder> phase_vocoder;
-	ScopedPointer<MixerAudioSource> mixer_source;
+	ScopedPointer<AudioDeviceManager> deviceManager;
+	ScopedPointer<AudioFileSource> audioSource;
+	ScopedPointer<AudioSampleBuffer> audioBuffer;
+	ScopedPointer<PhaseVocoder> phaseVocoder;
+	ScopedPointer<MixerAudioSource> mixerSource;
 
     int64 read_pos {0};
     int64 buf_cnt {0};

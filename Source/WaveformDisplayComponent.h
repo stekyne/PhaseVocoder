@@ -38,8 +38,7 @@ public:
     void setFile (const File& file)
     {
         thumbnail.setSource (new FileInputSource (file));
-        startTime = 0;
-        position = 0;
+        startTime = position = 0;
         endTime = thumbnail.getTotalLength ();
         repaint ();
     }
