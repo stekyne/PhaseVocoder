@@ -41,18 +41,20 @@ class PVMainComponent  : public Component,
                          public FilenameComponentListener,
                          public Timer,
                          public ButtonListener,
-                         public SliderListener
+                         public SliderListener,
+                         public ChangeListener
 {
 public:
     //==============================================================================
-    PVMainComponent ();
-    ~PVMainComponent();
+    PVMainComponent (AudioManager* audioManager);
+    ~PVMainComponent ();
 
     //==============================================================================
     //[UserMethods]     -- You can add your own custom methods in this section.
-
+    
 	void filenameComponentChanged (FilenameComponent*);
 	void timerCallback ();
+    void changeListenerCallback (ChangeBroadcaster* source);
 
     //[/UserMethods]
 
@@ -66,11 +68,10 @@ public:
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
 
-	AudioManager* audio_manager;
+	AudioManager* audioManager;
 
-	ScopedPointer<AudioFormatManager> format_manager;
 	ScopedPointer<FilenameComponent> fileChooser;
-	ScopedPointer<WaveformDisplay> waveform_display;
+	ScopedPointer<WaveformDisplay> waveformDisplay;
 
     //[/UserVariables]
 

@@ -8,14 +8,15 @@ class WaveformDisplay   :   public Component,
                             public ChangeListener
 {
 public:
-    WaveformDisplay (AudioFormatManager* const format_manager)
+    WaveformDisplay (AudioManager* const audioManager)
         :   thumbnailCache (5),
-            thumbnail (512, *format_manager, thumbnailCache)
+            thumbnail (1024, *audioManager->getFormatManager (), thumbnailCache),
+            audioManager (audioManager)
     {
         startTime = endTime = position = 0;
         thumbnail.addChangeListener (this);
-
-        audio_manager = AudioManager::getInstance ();
+        audioManager->addChangeListener (this);
+        setFile (audioManager->getCurrentAudioFile ());
     }
 
     ~WaveformDisplay ()
@@ -25,13 +26,13 @@ public:
 
     void mouseUp (const MouseEvent &e)
     {
-        const double playbackLength = audio_manager->getPlaybackLength ();
+        const double playbackLength = audioManager->getPlaybackLength ();
         const double newPlaybackPosition = (e.x / (float)getWidth ()) * playbackLength;
 
         if (newPlaybackPosition >= 0.0 &&
             newPlaybackPosition < playbackLength)
         {
-            audio_manager->setPosition (newPlaybackPosition);
+            audioManager->setPosition (newPlaybackPosition);
         }
     }
 
@@ -107,16 +108,23 @@ public:
         g.drawRect (0, 0, getWidth (), getHeight (), 2);
     }
 
-    void changeListenerCallback (ChangeBroadcaster*)
+    void changeListenerCallback (ChangeBroadcaster* source)
     {
+        if (dynamic_cast<AudioManager*> (source) != nullptr)
+        {
+            thumbnail.setSource (
+                new FileInputSource (audioManager->getCurrentAudioFile ()));
+            startTime = position = 0;
+            endTime = thumbnail.getTotalLength ();
+        }
         repaint ();
     }
 
 private:
     AudioThumbnailCache thumbnailCache;
     AudioThumbnail thumbnail;
-    double startTime, endTime, position;
-    AudioManager *audio_manager;
+    double startTime {0.0}, endTime {0.0}, position {0.0};
+    AudioManager* audioManager;
 };
 
 #endif

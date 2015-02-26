@@ -6,10 +6,11 @@
 #include "PhaseVocoder.h"
 
 class AudioManager	:	public ChangeListener,
+                        public ChangeBroadcaster,
 						public AudioIODeviceCallback
 {
 public:
-	AudioManager ();
+	AudioManager (String filename);
 	~AudioManager ();
 
 	void audioDeviceIOCallback (const float **inputChannelData, int totalNumInputChannels, 
@@ -18,7 +19,7 @@ public:
  	void audioDeviceAboutToStart (AudioIODevice *device);
  	void audioDeviceStopped ();
 
-	void changeListenerCallback (ChangeBroadcaster *source);
+    void changeListenerCallback (ChangeBroadcaster *source) {}
 	
 	void setGain (float gain)
 	{
@@ -72,28 +73,52 @@ public:
         return audioSource->getLengthInSeconds ();
 	}
 
-	void setFileSource (AudioFormatReader* const reader)
+	bool setFileSource (const File& audioFile)
 	{
-        audioSource->setFile (reader);
+        currentAudioFile = audioFile;
+        AudioFormatReader* reader = formatManager->createReaderFor (audioFile);
+
+        if (reader != nullptr)
+        {
+            audioSource->setFile (reader);
+            sendSynchronousChangeMessage ();
+            return true;
+        }
+
+        return false;
 	}
+
+    File getCurrentAudioFile () const
+    {
+        return currentAudioFile;
+    }
 
     ScopedPointer<AudioDeviceSelectorComponent> getSelector (
         int width = 500, int height = 400);
 
-    const double getCPU () const { return deviceManager->getCpuUsage (); }
+    double getCPU () const 
+    { 
+        return deviceManager->getCpuUsage (); 
+    }
 
-	juce_DeclareSingleton (AudioManager, true);
+    AudioFormatManager* getFormatManager () const
+    {
+        return formatManager;
+    }
 
 private:
 	ScopedPointer<AudioDeviceManager> deviceManager;
 	ScopedPointer<AudioFileSource> audioSource;
+    ScopedPointer<AudioFormatManager> formatManager;
 	ScopedPointer<AudioSampleBuffer> audioBuffer;
 	ScopedPointer<PhaseVocoder> phaseVocoder;
 	ScopedPointer<MixerAudioSource> mixerSource;
-
+    File currentAudioFile;
     int64 read_pos {0};
     int64 buf_cnt {0};
     bool shouldLoop {false};
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioManager);
 };
 
 #endif

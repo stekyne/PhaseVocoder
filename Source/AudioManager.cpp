@@ -2,11 +2,12 @@
 
 #define MAX_BUF_SIZE ((1024*2)+256)
 
-AudioManager::AudioManager ()
+AudioManager::AudioManager (String filename)
 	:	deviceManager (new AudioDeviceManager),
 		mixerSource (new MixerAudioSource),
 		audioSource (new AudioFileSource),
 		phaseVocoder (new PhaseVocoder),
+        formatManager (new AudioFormatManager),
 		audioBuffer (new AudioSampleBuffer (2, MAX_BUF_SIZE))
 {
 	const String result (deviceManager->initialise (0, 2, 0, true));
@@ -26,6 +27,14 @@ AudioManager::AudioManager ()
 		deviceManager->addAudioCallback (this);
 		deviceManager->addChangeListener (this);
 	}
+
+    formatManager->registerBasicFormats ();
+
+    // User supplied audio file in command line
+    if (!filename.isEmpty ())
+    {
+        setFileSource (filename);
+    }
 }
 
 AudioManager::~AudioManager ()
@@ -33,7 +42,6 @@ AudioManager::~AudioManager ()
 	deviceManager->removeAllChangeListeners ();
 	audioSource->setSource (0);
 	deviceManager->removeAudioCallback (this);
-	clearSingletonInstance ();
 }
 
 void AudioManager::audioDeviceIOCallback( 
@@ -45,7 +53,7 @@ void AudioManager::audioDeviceIOCallback(
 	{
 		// The buffer size must be less than 1024
 		jassert (numSamples <= 1024);
-        jassert (totalNumOutputChannels > 2);
+        jassert (totalNumOutputChannels >= 2);
 		
 		float* outputLeft = outputChannelData[0];
 		float* outputRight = outputChannelData[1];
@@ -92,16 +100,12 @@ void AudioManager::audioDeviceIOCallback(
 void AudioManager::audioDeviceAboutToStart (AudioIODevice* device)
 {
 	audioSource->prepareToPlay (device->getCurrentBufferSizeSamples(),
-								 device->getCurrentSampleRate());
+								device->getCurrentSampleRate());
 }
 
 void AudioManager::audioDeviceStopped ()
 {
 	audioSource->releaseResources ();
-}
-
-void AudioManager::changeListenerCallback (ChangeBroadcaster* /*source*/)
-{
 }
 
 ScopedPointer<AudioDeviceSelectorComponent> AudioManager::getSelector (
@@ -115,5 +119,3 @@ ScopedPointer<AudioDeviceSelectorComponent> AudioManager::getSelector (
 	deviceSelector->setSize (width, height);
 	return deviceSelector;
 }
-
-juce_ImplementSingleton (AudioManager);

@@ -2,11 +2,12 @@
 #define __MAINWINDOW_H_BE62E5DE__
 
 #include "../JuceLibraryCode/JuceHeader.h"
+class AudioManager;
 
 class MainAppWindow :   public DocumentWindow
 {
 public:
-    MainAppWindow ();
+    MainAppWindow (AudioManager* audioManager);
     ~MainAppWindow ();
 
     void closeButtonPressed ();

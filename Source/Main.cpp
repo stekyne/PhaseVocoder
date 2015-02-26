@@ -1,21 +1,23 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "MainWindow.h"
+#include "AudioManager.h"
 
 class PhaseVocoderApplication  : public JUCEApplication
 {
 public:
-    PhaseVocoderApplication () {}
+    PhaseVocoderApplication () = default;
+    ~PhaseVocoderApplication () = default;
 
-    ~PhaseVocoderApplication () {}
-
-    void initialise (const String& /*commandLine*/)
+    void initialise (const String& commandLine)
     {
-        mainWindow = new MainAppWindow;
+        audioManager = new AudioManager (commandLine);
+        mainWindow = new MainAppWindow (audioManager);
     }
 
     void shutdown ()
     {
         mainWindow = 0;
+        audioManager = 0;
     }
 
     void systemRequestedQuit ()
@@ -43,6 +45,7 @@ public:
     }
 
 private:
+    ScopedPointer<AudioManager> audioManager;
     ScopedPointer<MainAppWindow> mainWindow;
 };
 

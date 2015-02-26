@@ -27,7 +27,8 @@
 //[/MiscUserDefs]
 
 //==============================================================================
-PVMainComponent::PVMainComponent ()
+PVMainComponent::PVMainComponent (AudioManager* audioManager)
+    :   audioManager (audioManager)
 {
     addAndMakeVisible (header_label1 = new Label ("header_label1",
                                                   TRANS("Phase Vocoder")));
@@ -142,20 +143,16 @@ PVMainComponent::PVMainComponent ()
 
     //[UserPreSize]
 
-	format_manager = new AudioFormatManager;
-	format_manager->registerBasicFormats();
-
-	addAndMakeVisible( waveform_display = new WaveformDisplay( format_manager ) );
-
-	addAndMakeVisible( fileChooser
+    addAndMakeVisible (waveformDisplay = new WaveformDisplay (audioManager));
+	addAndMakeVisible (fileChooser
 		= new FilenameComponent("Audio File",
                                 File::nonexistent,
                                 true, false, false,
-								format_manager->getWildcardForAllFormats(),
+								audioManager->getFormatManager ()->getWildcardForAllFormats (),
                                 String::empty,
-                                "(Choose a WAV or AIFF file to play)") );
-    fileChooser->addListener( this );
-    fileChooser->setBrowseButtonText( "Browse" );
+                                "(Choose a WAV or AIFF file to play)"));
+    fileChooser->addListener (this);
+    fileChooser->setBrowseButtonText ("Browse");
 
     //[/UserPreSize]
 
@@ -164,13 +161,11 @@ PVMainComponent::PVMainComponent ()
 
     //[Constructor] You can add your own custom stuff here..
 
-	audio_manager = AudioManager::getInstance();
-
 	vol_slider1->setValue (1.0);
 	pitch_slider1->setValue (1.0);
 	time_slider1->setValue (1.0);
-
 	startTimer (1000 / 30);
+    audioManager->addChangeListener (this);
 
     //[/Constructor]
 }
@@ -178,8 +173,8 @@ PVMainComponent::PVMainComponent ()
 PVMainComponent::~PVMainComponent()
 {
     //[Destructor_pre]. You can add your own custom destruction code here..
-	stopTimer();
-	fileChooser->removeListener( this );
+	stopTimer ();
+	fileChooser->removeListener (this);
 
     //[/Destructor_pre]
 
@@ -244,8 +239,8 @@ void PVMainComponent::resized()
     phaselock_btn1->setBounds (312, 104, 96, 24);
     //[UserResized] Add your own custom resize handling here..
 
-	fileChooser->setBounds( 24, 137, getWidth()-48, 24 );
-	waveform_display->setBounds( 24, 165, getWidth()-48, getHeight() - 165 - 24 );
+	fileChooser->setBounds (24, 137, getWidth()-48, 24);
+    waveformDisplay->setBounds (24, 165, getWidth () - 48, getHeight () - 165 - 24);
 
     //[/UserResized]
 }
@@ -260,7 +255,7 @@ void PVMainComponent::buttonClicked (Button* buttonThatWasClicked)
         //[UserButtonCode_settings_btn1] -- add your button handler code here..
 
 		DialogWindow::showModalDialog ("Audio Device Settings",
-									    audio_manager->getSelector(),
+									    audioManager->getSelector(),
 										this, Colours::grey,
 										true);
 
@@ -270,7 +265,7 @@ void PVMainComponent::buttonClicked (Button* buttonThatWasClicked)
     {
         //[UserButtonCode_play_btn1] -- add your button handler code here..
 
-		audio_manager->play ();
+		audioManager->play ();
 
         //[/UserButtonCode_play_btn1]
     }
@@ -278,7 +273,7 @@ void PVMainComponent::buttonClicked (Button* buttonThatWasClicked)
     {
         //[UserButtonCode_stop_btn1] -- add your button handler code here..
 
-		audio_manager->stop ();
+		audioManager->stop ();
 
         //[/UserButtonCode_stop_btn1]
     }
@@ -286,7 +281,7 @@ void PVMainComponent::buttonClicked (Button* buttonThatWasClicked)
     {
         //[UserButtonCode_repeat_btn1] -- add your button handler code here..
 
-		audio_manager->setLooping (repeat_btn1->getToggleState ());
+		audioManager->setLooping (repeat_btn1->getToggleState ());
 
         //[/UserButtonCode_repeat_btn1]
     }
@@ -294,7 +289,7 @@ void PVMainComponent::buttonClicked (Button* buttonThatWasClicked)
     {
         //[UserButtonCode_phaselock_btn1] -- add your button handler code here..
 
-		audio_manager->setPhaseLock (phaselock_btn1->getToggleState ());
+		audioManager->setPhaseLock (phaselock_btn1->getToggleState ());
 
         //[/UserButtonCode_phaselock_btn1]
     }
@@ -312,7 +307,7 @@ void PVMainComponent::sliderValueChanged (Slider* sliderThatWasMoved)
     {
         //[UserSliderCode_playback_pos_slider1] -- add your slider handling code here..
 
-		audio_manager->setPosition ((float)playback_pos_slider1->getValue());
+		audioManager->setPosition ((float)playback_pos_slider1->getValue());
 
         //[/UserSliderCode_playback_pos_slider1]
     }
@@ -320,7 +315,7 @@ void PVMainComponent::sliderValueChanged (Slider* sliderThatWasMoved)
     {
         //[UserSliderCode_vol_slider1] -- add your slider handling code here..
 
-		audio_manager->setGain ((float)vol_slider1->getValue());
+		audioManager->setGain ((float)vol_slider1->getValue());
 
         //[/UserSliderCode_vol_slider1]
     }
@@ -328,7 +323,7 @@ void PVMainComponent::sliderValueChanged (Slider* sliderThatWasMoved)
     {
         //[UserSliderCode_pitch_slider1] -- add your slider handling code here..
 
-		audio_manager->setPitch ((float)pitch_slider1->getValue());
+		audioManager->setPitch ((float)pitch_slider1->getValue());
 
         //[/UserSliderCode_pitch_slider1]
     }
@@ -336,7 +331,7 @@ void PVMainComponent::sliderValueChanged (Slider* sliderThatWasMoved)
     {
         //[UserSliderCode_time_slider1] -- add your slider handling code here..
 
-		audio_manager->setTimeScale ((float)time_slider1->getValue());
+		audioManager->setTimeScale ((float)time_slider1->getValue());
 
         //[/UserSliderCode_time_slider1]
     }
@@ -351,29 +346,27 @@ void PVMainComponent::sliderValueChanged (Slider* sliderThatWasMoved)
 
 void PVMainComponent::timerCallback ()
 {
-	const double position = audio_manager->getPlaybackPosition ();
+	const double position = audioManager->getPlaybackPosition ();
 
 	playback_pos_slider1->setValue (position);
-	waveform_display->setPosition (position);
+    waveformDisplay->setPosition (position);
 
-	cpu_label1->setText ("CPU: " + String (audio_manager->getCPU (), 2)
+	cpu_label1->setText ("CPU: " + String (audioManager->getCPU (), 2)
 						 + "%", NotificationType::sendNotification);
 }
 
-void PVMainComponent::filenameComponentChanged (FilenameComponent*)
+void PVMainComponent::filenameComponentChanged (FilenameComponent* filename)
 {
-	File audioFile (fileChooser->getCurrentFile());
-
-    AudioFormatReader* reader = format_manager->createReaderFor (audioFile);
-
-    if (reader != nullptr)
+    if (audioManager->setFileSource (fileChooser->getCurrentFile ()))
     {
-		audio_manager->setFileSource (reader);
-		waveform_display->setFile (audioFile);
-
-		playback_pos_slider1->setRange (0.0f, audio_manager->getPlaybackLength ());
-		playback_pos_slider1->setValue (0.0f);
+        playback_pos_slider1->setRange (0.0f, audioManager->getPlaybackLength ());
+        playback_pos_slider1->setValue (0.0f);
     }
+}
+
+void PVMainComponent::changeListenerCallback (ChangeBroadcaster* source)
+{
+    // TODO reload audio file
 }
 
 //[/MiscUserCode]
