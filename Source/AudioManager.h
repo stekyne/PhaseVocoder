@@ -19,68 +19,69 @@ public:
  	void audioDeviceAboutToStart (AudioIODevice *device);
  	void audioDeviceStopped ();
 
-    void changeListenerCallback (ChangeBroadcaster *source) {}
+    void changeListenerCallback (ChangeBroadcaster* /*source*/) 
+	{}
 	
 	void setGain (float gain)
 	{
-        audioSource->setGain (gain);
+        audioSource.setGain (gain);
 	}
 
 	void play ()
 	{
-        audioSource->start ();
-        read_pos = audioSource->getNextReadPosition ();
+        audioSource.start ();
+        readPosition = audioSource.getNextReadPosition ();
 	}
 
 	void stop ()
 	{
-        audioSource->stop ();
+        audioSource.stop ();
 	}
 
-	void setLooping (bool shouldLoop)
+	void setLooping (bool shouldLoop_)
 	{
-        audioSource->setLooping (shouldLoop);
+        audioSource.setLooping (shouldLoop_);
 	}
 
-	void setPosition (double pos)
+	void setPosition (double position_)
 	{
-		audioSource->setPosition (pos);
-        read_pos = audioSource->getNextReadPosition ();
+		audioSource.setPosition (position_);
+        readPosition = audioSource.getNextReadPosition ();
 	}
 
 	void setPitch (float newValue)
 	{
-        phaseVocoder->setPitch (newValue);
+        phaseVocoder.setPitch (newValue);
 	}
 
 	void setTimeScale (float newValue)
 	{
-        phaseVocoder->setTimeScale (newValue);
+        phaseVocoder.setTimeScale (newValue);
 	}
 
 	void setPhaseLock (bool state)
 	{
-        phaseVocoder->setPhaseLock (state);
+        phaseVocoder.setPhaseLock (state);
 	}
 
 	double getPlaybackPosition () const
 	{
-        return audioSource->getCurrentPosition ();
+        return audioSource.getCurrentPosition ();
 	}
 
 	double getPlaybackLength () const
 	{
-        return audioSource->getLengthInSeconds ();
+        return audioSource.getLengthInSeconds ();
 	}
 
 	bool setFileSource (const File& audioFile)
 	{
         currentAudioFile = audioFile;
-        AudioFormatReader* reader = formatManager->createReaderFor (audioFile);
+        AudioFormatReader* reader = formatManager.createReaderFor (audioFile);
 
         if (reader != nullptr)
         {
-            audioSource->setFile (reader);
+            audioSource.setFile (reader);
             sendSynchronousChangeMessage ();
             return true;
         }
@@ -98,24 +99,24 @@ public:
 
     double getCPU () const 
     { 
-        return deviceManager->getCpuUsage (); 
+        return deviceManager.getCpuUsage (); 
     }
 
-    AudioFormatManager* getFormatManager () const
+    AudioFormatManager& getFormatManager () noexcept
     {
         return formatManager;
     }
 
 private:
-	ScopedPointer<AudioDeviceManager> deviceManager;
-	ScopedPointer<AudioFileSource> audioSource;
-    ScopedPointer<AudioFormatManager> formatManager;
-	ScopedPointer<AudioSampleBuffer> audioBuffer;
-	ScopedPointer<PhaseVocoder> phaseVocoder;
-	ScopedPointer<MixerAudioSource> mixerSource;
+	AudioDeviceManager deviceManager;
+	AudioFileSource audioSource;
+    AudioFormatManager formatManager;
+	AudioSampleBuffer audioBuffer;
+	PhaseVocoder phaseVocoder;
+	MixerAudioSource mixerSource;
     File currentAudioFile;
-    int64 read_pos {0};
-    int64 buf_cnt {0};
+    int64_t readPosition {0};
+	int64_t bufferCount {0};
     bool shouldLoop {false};
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioManager);

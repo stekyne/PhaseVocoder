@@ -6,209 +6,201 @@
 
 #include "PV.h"
 
-PV::PV( int	window_size,
-		int	fft_size,
-		int	init_hopsize )
-	:	window_size		( window_size ),
-		frame_cur		( 0 ),
-		pitch_ratio		( 1.0f ),				// default pitch ratio
-		time_ratio		( 1.0f ),				// default time ratio
-		numOverlaps		( 4 ),					// 4 overlaps for hanning window
-		hop_count		( init_hopsize ),	
-		fft_size		( fft_size ),
-		bin_count		( fft_size / 2 + 1 ),	// number of bins
-		audioIn_size	( window_size * 3 ),	// max size of the audio in buffer
-		audioOut_size	( window_size * 2 ),	// max size of the audio out buffer	
-		aout_write_pos	( 0 ),
-		aout_read_pos	( 0 ),
-		ain_write_pos	( 0 ),
-		ain_read_pos	( 0 ),							 
-		filled			( false ),
-		phase_lock		( true ),				// enable phase locking by default
-		max				( 2.0f ),
-		min				( 0.5f )
+PV::PV (int windowSize_, int fftSize_, int hopSize_) :
+	windowSize (windowSize_),
+	currentFrame (0),
+	pitchRatio (1.0f),				// default pitch ratio
+	timeRatio (1.0f),				// default time ratio
+	numOverlaps (4),				// 4 overlaps for hanning window
+	hopCount (hopSize_),
+	fftSize (fftSize_),
+	binCount (fftSize_ / 2 + 1),	// number of bins
+	audioInSize (windowSize_ * 3),	// max size of the audio in buffer
+	audioOutSize (windowSize_ * 2),	// max size of the audio out buffer	
+	aOutWritePos (0),
+	aOutReadPos (0),
+	aInWritePos (0),
+	aInReadPos (0),
+	filled (false),
+	phaseLock (true),				// enable phase locking by default
+	max (2.0f),
+	min (0.5f),
+	fft (13, false),
+	iFft (13, true)
 {
 	// minimum amount of samples required before processing
-	min_buffer_fill = max * (float)window_size;
+	minBufferFill = max * (float)windowSize;
 
 	// overlapping frame counters, keeps track of the offset for each buffer
-	frame_counters = new int[ numOverlaps ];
+	frameCounters = new int[numOverlaps];
 
 	// window function
-	window = new float[ window_size ];
+	window = new float[windowSize];
 
 	// audioIn circular buffer holds the samples coming in from a source, file or stream
 	// it needs to be big enough to hold at least 'fft_size * 2' as well as
 	// the 'maximum pitch_ratio * fft_size', if the pitch is being altered
-	audioIn  = new float[ audioIn_size ];
-	audioOut = new float[ audioOut_size ];
+	audioIn = new float[audioInSize];
+	audioOut = new float[audioOutSize];
 
-	// frames to hold data before FFT and after
-	front_frame = (float*)fftwf_malloc( sizeof(float) * fft_size );
-	back_frame  = (float*)fftwf_malloc( sizeof(float) * fft_size );
-		
-	// spectral data containers
-	fFrame_spec = (fftwf_complex*)fftwf_malloc( sizeof(fftwf_complex) * fft_size );
-	bFrame_spec = (fftwf_complex*)fftwf_malloc( sizeof(fftwf_complex) * fft_size );
-	last_spec	= (fftwf_complex*)fftwf_malloc( sizeof(fftwf_complex) * fft_size );
+	frontFrame = new float[fftSize];
+	backFrame = new float[fftSize];
 
+	fFrameSpec = new FFT::Complex[fftSize];
+	bFrameSpec = new FFT::Complex[fftSize];
+	lastSpec = new FFT::Complex[fftSize];
+
+	// frames to hold data before FFT and aft
 	// overlap buffer
-	overlap_buffer = new float*[ numOverlaps ];
-	
-	for( int i=0; i < numOverlaps; i++ ) 
-		overlap_buffer[i] = new float[ window_size ];
+	overlapBuffer = new float*[numOverlaps];
+
+	for (size_t i = 0; i < numOverlaps; i++)
+		overlapBuffer[i] = new float[windowSize];
 
 	// zero buffers
-	memset( frame_counters, 0, sizeof(int)	 * numOverlaps );
-	memset( audioIn,		0, sizeof(float) * audioIn_size );
-	memset( audioOut,		0, sizeof(float) * audioOut_size );
-	memset( front_frame,	0, sizeof(float) * fft_size );
-	memset( back_frame,		0, sizeof(float) * fft_size );
-	memset( fFrame_spec,	0, sizeof(fftwf_complex) * fft_size );
-	memset( bFrame_spec,	0, sizeof(fftwf_complex) * fft_size );
-	memset( last_spec,		0, sizeof(fftwf_complex) * fft_size );
+	memset (frameCounters, 0, sizeof (int) * numOverlaps);
+	memset (audioIn, 0, sizeof (float) * audioInSize);
+	memset (audioOut, 0, sizeof (float) * audioOutSize);
+	memset (frontFrame, 0, sizeof (float) * fftSize);
+	memset (backFrame, 0, sizeof (float) * fftSize);
+	memset (fFrameSpec, 0, sizeof (FFT::Complex) * fftSize);
+	memset (bFrameSpec, 0, sizeof (FFT::Complex) * fftSize);
+	memset (lastSpec, 0, sizeof (FFT::Complex) * fftSize);
 
-	for( int i=0; i < numOverlaps; i++ )
-		memset( overlap_buffer[i], 0, sizeof(float) * window_size );
-
-	/* end of data buffers section */
+	for (size_t i = 0; i < numOverlaps; i++)
+		memset (overlapBuffer[i], 0, sizeof (float) * windowSize);
 
 	// generate Hann window
-	for( int i=0; i < window_size; i++ ) 
-	{
-		window[i] = (float)(0.5 * ( 1.0 - cos( 2*double_Pi*i / window_size ) ));
-	}
-
-	// create plans for FFT and inverse FFT
-	front_frame_fft  = fftwf_plan_dft_r2c_1d( fft_size, front_frame, fFrame_spec, FFTW_MEASURE );
-	front_frame_ifft = fftwf_plan_dft_c2r_1d( fft_size, fFrame_spec, front_frame, FFTW_MEASURE );
-
-	back_frame_fft   = fftwf_plan_dft_r2c_1d( fft_size, back_frame, bFrame_spec, FFTW_MEASURE );
-	back_frame_ifft  = fftwf_plan_dft_c2r_1d( fft_size, bFrame_spec, back_frame, FFTW_MEASURE );
+	for (size_t i = 0; i < windowSize; i++)
+		window[i] = (float)(0.5 * (1.0 - cos (2 * double_Pi*i / windowSize)));
 }
 
-PV::~PV()
+PV::~PV ()
 {
-	for( int i=0; i < numOverlaps; i++ )
-		delete [] overlap_buffer[i];
-	delete [] overlap_buffer;
-	
-	fftwf_free( front_frame );
-	fftwf_free( back_frame );
-	fftwf_free( fFrame_spec );
-	fftwf_free( bFrame_spec );
-	fftwf_free( last_spec );
+	delete[] frameCounters; frameCounters = nullptr;
+	delete[] window; window = nullptr;
+	delete[] audioIn; audioIn = nullptr;
+	delete[] audioOut; audioOut = nullptr;
+	delete[] frontFrame; frontFrame = nullptr;
+	delete[] backFrame; backFrame = nullptr;
+	delete[] fFrameSpec; fFrameSpec = nullptr;
+	delete[] bFrameSpec; bFrameSpec = nullptr;
+	delete[] lastSpec; lastSpec = nullptr;
 
-	fftwf_destroy_plan( front_frame_fft );
-	fftwf_destroy_plan( front_frame_ifft );
-	fftwf_destroy_plan( back_frame_fft );
-	fftwf_destroy_plan( back_frame_ifft );
+	for (size_t i = 0; i < numOverlaps; i++) {
+		delete[] overlapBuffer[i];
+		overlapBuffer[i] = nullptr;
+	}
+
+	delete[] overlapBuffer; overlapBuffer = nullptr;
 }
 
 // set pitch transposition, check boundaries
-void PV::setPitch( float pitch )	
-{ 
-	if( pitch > max ) pitch_ratio = 2.0f;
-	else if( pitch < min ) pitch_ratio = 0.5;
-	else pitch_ratio = pitch; 
+void PV::setPitch (float pitch)
+{
+	if (pitch > max) pitchRatio = 2.0f;
+	else if (pitch < min) pitchRatio = 0.5;
+	else pitchRatio = pitch;
 }
 
 // set time ratio, check boundaries
-void PV::setTimeScale( float time ) 
+void PV::setTimeScale (float time)
 {
-	if( time > max ) time_ratio = 2.0f;
-	else if( time < min ) time_ratio = 0.5;
-	else time_ratio = time; 
+	if (time > max) timeRatio = 2.0f;
+	else if (time < min) timeRatio = 0.5;
+	else timeRatio = time;
 }
 
 // set phase locking switch
-void PV::setPhaseLock( bool state )
+void PV::setPhaseLock (bool state)
 {
-	phase_lock = state; 
+	phaseLock = state;
 }
 
 /*
 	This process method is intended for real-time pitch alteration.
  */
-void PV::process( const float *input,
-				  float	*output,
-			      int buffer_size,
-				  int hop_size_a )
+void PV::process (const float* input, float* output, size_t bufferSize, size_t hopSizeA)
 {
-	for( int n=0; n < buffer_size; ++n ) 
+	for (size_t n = 0; n < bufferSize; ++n)
 	{
 		/*
-			We need a minimum of 'max_pitch_ratio x fft_size' samples
+			We need a minimum of 'maxPitchRatio x fftSize' samples
 			before we begin processing
 		 */
 
-		// add in sample to the buffer
-		audioIn[ ain_write_pos ] = input[n];
+		 // add in sample to the buffer
+		audioIn[aInWritePos] = input[n];
 
 		// increment and check reading boundary
-		if( ++ain_write_pos == audioIn_size ) ain_write_pos = 0;
+		if (++aInWritePos == audioInSize) 
+			aInWritePos = 0;
 
 		// keep reading in data until we reach the minimum amount of
 		// samples needed
-		if( ain_write_pos >= min_buffer_fill+1 || filled ) 
+		if (aInWritePos >= minBufferFill + 1 || filled)
 		{
 			// keep processing from now on
 			filled = true;
 
-			/*	
+			/*
 				The next section of code runs at the beginning and every 'hop_size_a'
-				samples thereafter. It adds a new block of processed data to the 
+				samples thereafter. It adds a new block of processed data to the
 				overlapped buffer every 4 'hop_size_a' samples or when 'frame_cur = 0'
 			*/
-			
+
 			// process new frames when the hop size is reached
-			if( hop_count >= hop_size_a )
+			if (hopCount >= hopSizeA)
 			{
 				// fill two frames of data
-				int	  iposa, iposb;			// some variables for the linear
-				float frac;					// interpolation
-	
-				read_posf = (float)ain_read_pos;
-				read_posb = (ain_read_pos - hop_size_a < 0) 
-							? (float)(audioIn_size - hop_size_a):
-							  (float)(ain_read_pos - hop_size_a);
-	
-				for( int i=0; i < window_size; ++i ) 
-				{	
+				size_t iposa, iposb;
+				float frac;
+
+				readPosF = (float)aInReadPos;
+				readPosB = (aInReadPos - hopSizeA < 0) ? 
+					(float)(audioInSize - hopSizeA) :
+					(float)(aInReadPos - hopSizeA);
+
+				for (size_t i = 0; i < windowSize; ++i)
+				{
 					// front frame
-					iposa  = (int)read_posf;
-					iposb  = (iposa + 1 == audioIn_size)? 0 : iposa + 1;
-					frac   = read_posf - iposa;
+					iposa = (int)readPosF;
+					iposb = (iposa + 1 == audioInSize) ? 0 : iposa + 1;
+					frac = readPosF - iposa;
 
-					front_frame[i] = 
-						(audioIn[ iposa ] + 
-						frac * ( audioIn[ iposb ] - audioIn[ iposa ] ))
+					frontFrame[i] =
+						(audioIn[iposa] +
+							frac * (audioIn[iposb] - audioIn[iposa]))
 						* window[i];
-					
+
 					// back frame
-					iposa  = (int)read_posb;
-					iposb  = (iposa + 1 == audioIn_size)? 0 : iposa + 1;
-					frac   = read_posb - iposa;
+					iposa = (int)readPosB;
+					iposb = (iposa + 1 == audioInSize) ? 0 : iposa + 1;
+					frac = readPosB - iposa;
 
-					back_frame[i] = 
-						(audioIn[ iposa ] + 
-						frac * ( audioIn[ iposb ] - audioIn[ iposa ] ))
+					backFrame[i] =
+						(audioIn[iposa] +
+							frac * (audioIn[iposb] - audioIn[iposa]))
 						* window[i];
-					
+
 					// increment position by the pitch ratio
-					read_posf += pitch_ratio;
-					read_posb += pitch_ratio;
+					readPosF += pitchRatio;
+					readPosB += pitchRatio;
 
 					// check reading boundary
-					if( read_posf >= audioIn_size ) read_posf -= audioIn_size;
-					if( read_posb >= audioIn_size ) read_posb -= audioIn_size;
+					if (readPosF >= audioInSize) 
+						readPosF -= audioInSize;
+					
+					if (readPosB >= audioInSize) 
+						readPosB -= audioInSize;
 				}
 
 				// increment reading position, shift position by the hopsize amount
-				ain_read_pos += hop_size_a;
-				
+				aInReadPos += hopSizeA;
+
 				// wrap 'read_pos' if it reaches the end of the buffer
-				if( ain_read_pos >= audioIn_size ) ain_read_pos = 0;	
+				if (aInReadPos >= audioInSize) 
+					aInReadPos = 0;
 
 				// perform FFTs on frames
 				//fftwf_execute( front_frame_fft );
@@ -293,45 +285,47 @@ void PV::process( const float *input,
 				//fftwf_execute( front_frame_ifft );
 
 				// reset counter for current frame
-				frame_counters[ frame_cur ] = 0;
+				frameCounters[currentFrame] = 0;
 
 				// fill current frame with new data	
-				for( int i=0; i < window_size; ++i ) 
+				for (size_t i = 0; i < windowSize; ++i)
 				{
 					// scale output from iFFT
 					//front_frame[i] /= (float)fft_size;
 
 					// write to overlapped buffer and window at the same time
-					overlap_buffer[ frame_cur ][i] = front_frame[i] * window[i];
+					overlapBuffer[currentFrame][i] = frontFrame[i] * window[i];
 				}
-				
+
 				// move to next frame
 				// reset back to starting frame if last frame is reached
-				if( ++frame_cur == numOverlaps ) frame_cur = 0;
+				if (++currentFrame == numOverlaps) 
+					currentFrame = 0;
 
 				// reset hop count
-				hop_count = 0;
+				hopCount = 0;
 			}
-			
-			/*	
-				This section combines the overlapped buffer to write the output sample 
+
+			/*
+				This section combines the overlapped buffer to write the output sample
 				This code runs for every loop iteration until 'buffer_size' is reached
 			*/
 
 			// write to output buffer
 			output[n] = 0.0f;
-			for( int i=0; i < numOverlaps; ++i )
-			{
-				output[n] += overlap_buffer[i][ frame_counters[i] ];
-				frame_counters[i]++;
-			}
-			
-			// accumulate overlapping windows and scale output to prevent clipping
-			output[n] *= (float)(1.95/3.0f);
 
-			hop_count++;
+			for (size_t i = 0; i < numOverlaps; ++i)
+			{
+				output[n] += overlapBuffer[i][frameCounters[i]];
+				frameCounters[i]++;
+			}
+
+			// accumulate overlapping windows and scale output to prevent clipping
+			output[n] *= (float)(1.95 / 3.0f);
+
+			hopCount++;
 		}
-		else 
+		else
 		{
 			// output zeros if we don't have enough samples in the buffer yet
 			output[n] = 0.0f;
@@ -346,171 +340,171 @@ void PV::process( const float *input,
 
 	It will then output a hopsize worth of data.
  */
-void PV::processOffline( const float *input,
-						 float *output,
-						 int hop_size_a,
-				  	     int buffer_size )
+void PV::processOffline (const float *input, float *output,	
+						 size_t hopSizeA, size_t bufferSize)
 {
-	for( int n=0; n < buffer_size; ++n ) 
+	for (size_t n = 0; n < bufferSize; ++n)
 	{
-		/*	
+		/*
 			The next section of code runs at the beginning and every 'hop_size_a'
-			samples thereafter. It adds a new block of processed data to the 
+			samples thereafter. It adds a new block of processed data to the
 			overlapped buffer every 4 'hop_size_a' samples or when 'frame_cur = 0'
 		*/
-			
+
 		// process new frames when the hop size is reached
-		if( hop_count >= hop_size_a ) 
+		if (hopCount >= hopSizeA)
 		{
 			// fill two frames of data
 			int	  iposa, iposb;			// some variables for the linear
 			float frac;					// interpolation
-	
-			read_posf = (float)hop_size_a;
-			read_posb = 0.f;
-	
-			for( int i=0; i < window_size; ++i ) 
-			{	
+
+			readPosF = (float)hopSizeA;
+			readPosB = 0.f;
+
+			for (size_t i = 0; i < windowSize; ++i)
+			{
 				// front frame
-				iposa  = (int)read_posf;
-				iposb  = (int)read_posf + 1;
-				frac   = read_posf - iposa;
+				iposa = (int)readPosF;
+				iposb = (int)readPosF + 1;
+				frac = readPosF - iposa;
 
-				front_frame[i] = 
-					(input[ iposa ] + 
-					frac * ( input[ iposb ] - input[ iposa ] ))
+				frontFrame[i] =
+					(input[iposa] +
+						frac * (input[iposb] - input[iposa]))
 					* window[i];
-					
+
 				// back frame
-				iposa  = (int)read_posb;
-				iposb  = (int)read_posb + 1;
-				frac   = read_posb - iposa;
+				iposa = (int)readPosB;
+				iposb = (int)readPosB + 1;
+				frac = readPosB - iposa;
 
-				back_frame[i] = 
-					(input[ iposa ] + 
-					frac * ( input[ iposb ] - input[ iposa ] ))
+				backFrame[i] =
+					(input[iposa] +
+						frac * (input[iposb] - input[iposa]))
 					* window[i];
-					
+
 				// increment position by the pitch ratio
-				read_posf += pitch_ratio;
-				read_posb += pitch_ratio;
+				readPosF += pitchRatio;
+				readPosB += pitchRatio;
 			}
 
-			// perform FFTs on frames
-			fftwf_execute( front_frame_fft );
-			fftwf_execute( back_frame_fft );
+			fft.performRealOnlyForwardTransform (frontFrame);
+			fft.performRealOnlyForwardTransform (backFrame);
 
-			/* 
-				Phase Vocoder Processing 	
+			/*
+				Phase Vocoder Processing
 			*/
 			double phase[2], temp[2], div;
 
-			for( int bin=0; bin < bin_count; ++bin ) 
+			for (size_t bin = 0; bin < binCount; ++bin)
 			{
 				// get the phases of the last output frame
 				// by dividing by the magnitude
 				// add small number to avoid divide by zero
-				div = 1.0 / (hypotf( last_spec[bin][IMAG], last_spec[bin][REAL] ) + 1e-20);
-				phase[REAL] = last_spec[bin][REAL] * div;
-				phase[IMAG] = last_spec[bin][IMAG] * div;
-					
+				div = 1.0 / (hypotf (lastSpec[bin].i, lastSpec[bin].r) + 1e-20);
+				phase[REAL] = lastSpec[bin].r * div;
+				phase[IMAG] = lastSpec[bin].i * div;
+
 				// sum the phases of the last output and the back frame
-				temp[REAL] =  bFrame_spec[bin][REAL] * phase[REAL] + bFrame_spec[bin][IMAG] * phase[IMAG];
-				temp[IMAG] =  bFrame_spec[bin][REAL] * phase[IMAG] - bFrame_spec[bin][IMAG] * phase[REAL];
-					
+				temp[REAL] = bFrameSpec[bin].r * phase[REAL] + bFrameSpec[bin].i * phase[IMAG];
+				temp[IMAG] = bFrameSpec[bin].r * phase[IMAG] - bFrameSpec[bin].i * phase[REAL];
+
 				// assign the result to the back frame
-				bFrame_spec[bin][REAL] = (float)temp[REAL];
-				bFrame_spec[bin][IMAG] = (float)temp[IMAG];
+				bFrameSpec[bin].r = (float)temp[REAL];
+				bFrameSpec[bin].i = (float)temp[IMAG];
 			}
 
-			for( int bin=0; bin < bin_count; ++bin ) 
+			for (size_t bin = 0; bin < binCount; ++bin)
 			{
 				// phase locking enabled
-				if( phase_lock ) 
+				if (phaseLock)
 				{
 					// all other bins
-					if( bin != 0 && bin < bin_count )
+					if (bin != 0 && bin < binCount)
 					{
-						temp[REAL] = bFrame_spec[bin][REAL] + bFrame_spec[bin-1][REAL] + bFrame_spec[bin+1][REAL];
-						temp[IMAG] = bFrame_spec[bin][IMAG] + bFrame_spec[bin-1][IMAG] + bFrame_spec[bin+1][IMAG];
+						temp[REAL] = bFrameSpec[bin].r + bFrameSpec[bin - 1].r + bFrameSpec[bin + 1].r;
+						temp[IMAG] = bFrameSpec[bin].i + bFrameSpec[bin - 1].i + bFrameSpec[bin + 1].i;
 					}
 					// Nyquist
-					else if( bin == bin_count-1 )
-					{ 
-						temp[REAL] = bFrame_spec[bin][REAL] + bFrame_spec[bin-1][REAL];
+					else if (bin == binCount - 1)
+					{
+						temp[REAL] = bFrameSpec[bin].r + bFrameSpec[bin - 1].r;
 						temp[IMAG] = 0.0f;
 					}
 					// DC
-					else if( bin == 0 )
-					{ 
-						temp[REAL] = bFrame_spec[bin][REAL] + bFrame_spec[bin+1][REAL];
+					else if (bin == 0)
+					{
+						temp[REAL] = bFrameSpec[bin].r + bFrameSpec[bin + 1].r;
 						temp[IMAG] = 0.0f;
 					}
 				}
 				// no phase locking
-				else 
-				{	
-					temp[REAL] = bFrame_spec[bin][REAL];
-					temp[IMAG] = bFrame_spec[bin][IMAG];
+				else
+				{
+					temp[REAL] = bFrameSpec[bin].r;
+					temp[IMAG] = bFrameSpec[bin].i;
 				}
 
-				temp[REAL] += 1e-20;	// must not be zero
-					
+				temp[REAL] += 1e-20;	// very small number avoiding 0
+
 				// get the phases for temp
 				div = 1.0 / hypot (temp[REAL], temp[IMAG]);
 				phase[REAL] = temp[REAL] * div;
 				phase[IMAG] = temp[IMAG] * div;
-	    
+
 				// add the phases of  temp and the front window
 				// the magnitudes of the front frame will be kept
-				temp[REAL] = fFrame_spec[bin][REAL] * phase[REAL] - fFrame_spec[bin][IMAG] * phase[IMAG];
-				temp[IMAG] = fFrame_spec[bin][REAL] * phase[IMAG] + fFrame_spec[bin][IMAG] * phase[REAL];
+				temp[REAL] = bFrameSpec[bin].r * phase[REAL] - bFrameSpec[bin].i * phase[IMAG];
+				temp[IMAG] = bFrameSpec[bin].r * phase[IMAG] + bFrameSpec[bin].i * phase[REAL];
 
 				// output and store result
-				last_spec[bin][REAL] = fFrame_spec[bin][REAL] = (float)temp[REAL];
-				last_spec[bin][IMAG] = fFrame_spec[bin][IMAG] = (float)temp[IMAG];
+				lastSpec[bin].r = bFrameSpec[bin].r = (float)temp[REAL];
+				lastSpec[bin].i = bFrameSpec[bin].i = (float)temp[IMAG];
 			}
 
 			// perform inverse FFT
-			fftwf_execute( front_frame_ifft );
+			iFft.performRealOnlyInverseTransform (frontFrame);
 
 			// reset counter for current frame
-			frame_counters[ frame_cur ] = 0;
+			frameCounters[currentFrame] = 0;
 
 			// fill current frame with new data	
-			for( int i=0; i < window_size; ++i ) 
+			for (size_t i = 0; i < windowSize; ++i)
 			{
 				// scale output from iFFT
-				front_frame[i] /= (float)fft_size;
+				frontFrame[i] /= (float)fftSize;
 
 				// write to overlapped buffer and window at the same time
-				overlap_buffer[ frame_cur ][i] = front_frame[i] * window[i];
+				overlapBuffer[currentFrame][i] = frontFrame[i] * window[i];
 			}
-				
+
 			// move to next frame
 			// reset back to starting frame if last frame is reached
-			if( ++frame_cur == numOverlaps ) frame_cur = 0;
+			if (++currentFrame == numOverlaps) 
+				currentFrame = 0;
 
 			// reset hop count
-			hop_count = 0;
+			hopCount = 0;
 		}
-			
-		/*	
-			This section combines the overlapped buffer to write the output sample 
+
+		/*
+			This section combines the overlapped buffer to write the output sample
 			This code runs for every loop iteration until 'hop_size_a' is reached
 		*/
 
 		// write to output buffer
 		output[n] = 0.0f;
-		for( int i=0; i < numOverlaps; ++i )
+
+		for (size_t i = 0; i < numOverlaps; ++i)
 		{
-			output[n] += overlap_buffer[i][ frame_counters[i] ];
-			frame_counters[i]++;
+			output[n] += overlapBuffer[i][frameCounters[i]];
+			frameCounters[i]++;
 		}
-			
+
 		// accumulate overlapping windows and scale output to prevent clipping
-		output[n] *= (float)(1.95/3.0);
-			
-		hop_count++;
+		// TODO this shouldn't be required, remove if possible
+		output[n] *= (float)(1.95 / 3.0);
+
+		hopCount++;
 	}
 }

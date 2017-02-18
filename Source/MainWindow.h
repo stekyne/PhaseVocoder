@@ -7,7 +7,7 @@ class AudioManager;
 class MainAppWindow :   public DocumentWindow
 {
 public:
-    MainAppWindow (AudioManager* audioManager);
+    MainAppWindow (AudioManager& audioManager);
     ~MainAppWindow ();
 
     void closeButtonPressed ();

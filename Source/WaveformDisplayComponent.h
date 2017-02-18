@@ -8,15 +8,15 @@ class WaveformDisplay   :   public Component,
                             public ChangeListener
 {
 public:
-    WaveformDisplay (AudioManager* const audioManager)
+    WaveformDisplay (AudioManager& audioManager)
         :   thumbnailCache (5),
-            thumbnail (1024, *audioManager->getFormatManager (), thumbnailCache),
+            thumbnail (1024, audioManager.getFormatManager (), thumbnailCache),
             audioManager (audioManager)
     {
         startTime = endTime = position = 0;
         thumbnail.addChangeListener (this);
-        audioManager->addChangeListener (this);
-        setFile (audioManager->getCurrentAudioFile ());
+        audioManager.addChangeListener (this);
+        setFile (audioManager.getCurrentAudioFile ());
     }
 
     ~WaveformDisplay ()
@@ -26,13 +26,13 @@ public:
 
     void mouseUp (const MouseEvent &e)
     {
-        const double playbackLength = audioManager->getPlaybackLength ();
+        const double playbackLength = audioManager.getPlaybackLength ();
         const double newPlaybackPosition = (e.x / (float)getWidth ()) * playbackLength;
 
         if (newPlaybackPosition >= 0.0 &&
             newPlaybackPosition < playbackLength)
         {
-            audioManager->setPosition (newPlaybackPosition);
+            audioManager.setPosition (newPlaybackPosition);
         }
     }
 
@@ -94,10 +94,10 @@ public:
             // doesn't make sense
             if (x > 0 && x < getWidth ())
             {
-                const double pos = (float)((x / (float)getWidth ()) * endTime);
+                const double pos_ = (float)((x / (float)getWidth ()) * endTime);
 
-                g.drawLine (x, 0, x, getHeight (), 1.0f);
-                g.drawText (String (pos, 2) + " s",
+                g.drawLine (x, 0.f, x, (float)getHeight (), 1.0f);
+                g.drawText (String (pos_, 2) + " s",
                             x + 3, 1, 50, getHeight () - 2,
                             Justification::topLeft, false);
             }
@@ -113,7 +113,7 @@ public:
         if (dynamic_cast<AudioManager*> (source) != nullptr)
         {
             thumbnail.setSource (
-                new FileInputSource (audioManager->getCurrentAudioFile ()));
+                new FileInputSource (audioManager.getCurrentAudioFile ()));
             startTime = position = 0;
             endTime = thumbnail.getTotalLength ();
         }
@@ -124,7 +124,7 @@ private:
     AudioThumbnailCache thumbnailCache;
     AudioThumbnail thumbnail;
     double startTime {0.0}, endTime {0.0}, position {0.0};
-    AudioManager* audioManager;
+    AudioManager& audioManager;
 };
 
 #endif

@@ -3,7 +3,7 @@
 #include "PVMainComponent.h"
 
 //==============================================================================
-MainAppWindow::MainAppWindow (AudioManager* audioManager)
+MainAppWindow::MainAppWindow (AudioManager& audioManager)
     : DocumentWindow (JUCEApplication::getInstance()->getApplicationName(),
                       Colours::lightgrey,
                       DocumentWindow::allButtons)

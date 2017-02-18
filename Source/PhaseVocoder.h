@@ -16,26 +16,26 @@ public:
 
 	void setPitch (float pitch_ratio)
 	{
-		this->pitch_ratio = pitch_ratio;
+		this->pitchRatio = pitch_ratio;
 		pv_left->setPitch (pitch_ratio);
 		pv_right->setPitch (pitch_ratio);
 	}
 	
 	void setTimeScale (float time_ratio)
 	{
-		this->time_ratio = time_ratio;
+		this->timeRatio = time_ratio;
 		pv_left->setTimeScale (time_ratio);
 		pv_right->setTimeScale (time_ratio);
 	}
 
 	double getPitch () const
 	{
-		return pitch_ratio;
+		return pitchRatio;
 	}
 
 	float getTimeScale () const 
 	{
-		return time_ratio;
+		return timeRatio;
 	}
 	
 	void setPhaseLock (bool state)
@@ -54,7 +54,8 @@ private:
 	ScopedPointer<PV> pv_left;
 	ScopedPointer<PV> pv_right;
 
-    float pitch_ratio {1.f}, time_ratio {1.f};
+	float pitchRatio {1.f};
+	float timeRatio {1.f};
     bool isLocked {true};
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PhaseVocoder);

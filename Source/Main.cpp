@@ -11,7 +11,7 @@ public:
     void initialise (const String& commandLine)
     {
         audioManager = new AudioManager (commandLine);
-        mainWindow = new MainAppWindow (audioManager);
+        mainWindow = new MainAppWindow (*audioManager);
     }
 
     void shutdown ()
