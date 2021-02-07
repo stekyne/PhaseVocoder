@@ -3,12 +3,6 @@ project(PhaseVocoder VERSION 0.0.1)
 
 find_package(JUCE CONFIG REQUIRED)
 
-# If you are building a VST2 or AAX plugin, CMake needs to be told where to find these SDKs on your
-# system. This setup should be done before calling `juce_add_plugin`.
-
-# juce_set_vst2_sdk_path(...)
-# juce_set_aax_sdk_path(...)
-
 juce_add_plugin(PhaseVocoder
     # VERSION 0.0.1
     # ICON_BIG ...                              # ICON_* arguments specify a path to an image file to use as an icon for the Standalone

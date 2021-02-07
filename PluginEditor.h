@@ -1,22 +1,22 @@
 #pragma once
 
+#include <juce_gui_basics/juce_gui_basics.h>
+#include <juce_audio_processors/juce_audio_processors.h>
 #include "PluginProcessor.h"
 
-//==============================================================================
-class AudioPluginAudioProcessorEditor  : public juce::AudioProcessorEditor
+class PsolaAudioProcessorEditor  : public juce::AudioProcessorEditor
 {
 public:
-    explicit AudioPluginAudioProcessorEditor (AudioPluginAudioProcessor&);
-    ~AudioPluginAudioProcessorEditor() override;
+    PsolaAudioProcessorEditor (PsolaAudioProcessor* procesor);
+    ~PsolaAudioProcessorEditor();
 
-    //==============================================================================
     void paint (juce::Graphics&) override;
     void resized() override;
 
 private:
-    // This reference is provided as a quick way for your editor to
-    // access the processor object that created it.
-    AudioPluginAudioProcessor& processorRef;
+    PsolaAudioProcessor* processor;
+	juce::Slider pitchSlider;
+	juce::AudioProcessorValueTreeState::SliderAttachment pitchAttachment;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessorEditor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PsolaAudioProcessorEditor)
 };
