@@ -1,4 +1,5 @@
 #pragma once
+
 #include <juce_dsp/juce_dsp.h>
 #include <algorithm>
 #include <functional>
@@ -49,14 +50,14 @@ public:
 		windowSize (windowLength),
 		resampleSize (windowLength),
 		spectralBufferSize (windowLength * 2),
-		fft (std::make_unique<dsp::FFT> (nearestPower2 (fftSize))),
+		fft (std::make_unique<juce::dsp::FFT> (nearestPower2 (fftSize))),
 		analysisBuffer (windowLength),
 		synthesisBuffer (windowLength * 3),
 		windowBuffer (new FloatType[windowLength])
 	{
 		// TODO make the window more configurable
-		dsp::WindowingFunction<FloatType>::fillWindowingTables (windowBuffer, windowSize,
-			dsp::WindowingFunction<FloatType>::hann, false);
+		juce::dsp::WindowingFunction<FloatType>::fillWindowingTables (windowBuffer, windowSize,
+			juce::dsp::WindowingFunction<FloatType>::hann, false);
 
 		// Processing reuses the spectral buffer to resize the output grain
 		// It must be the at least the size of the min pitch ratio
@@ -103,7 +104,7 @@ public:
 	// 7. Read a block of samples from the synthesis buffer
 	void process (FloatType* incomingBuffer, const int incomingBufferSize)
 	{
-		ScopedNoDenormals noDenormals;
+		juce::ScopedNoDenormals noDenormals;
 
 		static int callbackCount = 0;
 		DBG (" ");
@@ -149,7 +150,7 @@ public:
 				DBG ("Analysis Read Index: " << analysisBuffer.getReadIndex ());
 
 				// Apply window to signal
-				FloatVectorOperations::multiply (spectralBuffer, windowBuffer, windowSize);
+				juce::FloatVectorOperations::multiply (spectralBuffer, windowBuffer, windowSize);
 
 				// Rotate signal 180 degrees, move the first half to the back and back to the front
 				std::rotate (spectralBuffer, spectralBuffer + (windowSize / 2), spectralBuffer + windowSize);
@@ -163,7 +164,7 @@ public:
 				std::rotate (spectralBuffer, spectralBuffer + (windowSize / 2), spectralBuffer + windowSize);
 
 				// Apply window to signal
-				FloatVectorOperations::multiply (spectralBuffer, windowBuffer, windowSize);
+				juce::FloatVectorOperations::multiply (spectralBuffer, windowBuffer, windowSize);
 
 				auto synthesisWriteBuffer = spectralBuffer;
 				auto synthesisWriteBufferSize = windowSize;
@@ -198,7 +199,7 @@ public:
 		}
 
 		// Rescale output
-		FloatVectorOperations::multiply (incomingBuffer, 1.f / rescalingFactor, incomingBufferSize);
+		juce::FloatVectorOperations::multiply (incomingBuffer, 1.f / rescalingFactor, incomingBufferSize);
 	}
 
 	// Principal argument - Unwrap a phase argument to between [-PI, PI]
@@ -212,7 +213,7 @@ public:
 	// If the value given is not a power of two, the nearest power 2 will be used
 	static int nearestPower2 (int value)
 	{
-		return (int)log2 (nextPowerOfTwo (value));
+		return (int)log2 (juce::nextPowerOfTwo (value));
 	}
 
 private:

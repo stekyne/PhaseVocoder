@@ -29,6 +29,8 @@ target_compile_definitions(PhaseVocoder
         JUCE_VST3_CAN_REPLACE_VST2=0
 )
 
+target_compile_features(PhaseVocoder PUBLIC cxx_std_17)
+
 # If your target needs extra binary assets, you can add them here. The first argument is the name of
 # a new static library target that will include all the binary resources. There is an optional
 # `NAMESPACE` argument that can specify the namespace of the generated binary data class. Finally,

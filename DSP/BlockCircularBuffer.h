@@ -133,11 +133,11 @@ struct BlockCircularBuffer final
 		int firstWriteAmount = writeIndex + overlapAmount > length ?
 			length - writeIndex : overlapAmount;
 
-		FloatVectorOperations::add (internalBuffer + writeIndex, sourceBuffer, firstWriteAmount);
+		juce::FloatVectorOperations::add (internalBuffer + writeIndex, sourceBuffer, firstWriteAmount);
 
 		if (firstWriteAmount < overlapAmount)
 		{
-			FloatVectorOperations::add (internalBuffer, sourceBuffer + firstWriteAmount,
+			juce::FloatVectorOperations::add (internalBuffer, sourceBuffer + firstWriteAmount,
 				overlapAmount - firstWriteAmount);
 		}
 
@@ -166,7 +166,7 @@ struct BlockCircularBuffer final
 	void printState ()
 	{
 #ifdef DEBUG
-		DBG ("Name: " << name << String::formatted (", Read Indx: %d, Write Indx: %d, Length: %d",
+		DBG ("Name: " << name << juce::String::formatted (", Read Indx: %d, Write Indx: %d, Length: %d",
 			readIndex, writeIndex, length));
 #endif
 	}
