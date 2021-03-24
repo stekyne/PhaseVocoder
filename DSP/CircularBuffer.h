@@ -3,7 +3,7 @@
 // A circular buffer that operates on blocks of data rather than
 // single elements. Hop size can be set for read or write 
 // This will increment the appropriate index by the hop amount
-template <typename DataType>
+template <typename DataType = float>
 class CircularBlockBuffer
 {
 public:

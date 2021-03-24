@@ -4,7 +4,7 @@
 #include <memory>
 #include <cassert>
 
-template<typename DataType = float>
+template<typename ElementType = float>
 struct BlockCircularBuffer final
 {
     BlockCircularBuffer () = default;
@@ -73,23 +73,23 @@ struct BlockCircularBuffer final
 
     // Read samples from the internal buffer into the 'destBuffer'
     // perform a wrap of the read if near the internal buffer boundaries
-    void read (DataType* destBuffer, const long destLength)
+    void read (ElementType* const destBuffer, const long destLength)
     {
-        const int firstReadAmount = readIndex + destLength >= length ?
+        const auto firstReadAmount = readIndex + destLength >= length ?
 			length - readIndex : destLength;
 
 		assert (destLength <= length);
 		assert (firstReadAmount <= destLength);
 
-		auto internalBuffer = block.getData ();
+		const auto internalBuffer = block.getData ();
 		assert (internalBuffer != destBuffer);
 
-		memcpy (destBuffer, internalBuffer + readIndex, sizeof (DataType) * firstReadAmount);
+		memcpy (destBuffer, internalBuffer + readIndex, sizeof (ElementType) * firstReadAmount);
 
 		if (firstReadAmount < destLength)
 		{
-			memcpy (destBuffer + firstReadAmount, internalBuffer, sizeof (DataType) * 
-				(destLength - firstReadAmount));
+			memcpy (destBuffer + firstReadAmount, internalBuffer, sizeof (ElementType) * 
+				(static_cast<unsigned long long>(destLength) - firstReadAmount));
 		}
 
 		readIndex += readHopSize != 0 ? readHopSize : destLength;
@@ -100,21 +100,21 @@ struct BlockCircularBuffer final
 
     // Write all samples from the 'sourceBuffer' into the internal buffer
     // Perform any wrapping required
-    void write (const DataType* sourceBuffer, const long sourceLength)
+    void write (const ElementType* sourceBuffer, const long sourceLength)
     {
 		sampleCount += sourceLength;
 
-		const int firstWriteAmount = writeIndex + sourceLength >= length ?
+		const auto firstWriteAmount = writeIndex + sourceLength >= length ?
 			length - writeIndex : sourceLength;
 
 		auto internalBuffer = block.getData ();
 		assert (internalBuffer != sourceBuffer);
-		memcpy (internalBuffer + writeIndex, sourceBuffer, sizeof (DataType) * firstWriteAmount);
+		memcpy (internalBuffer + writeIndex, sourceBuffer, sizeof (ElementType) * firstWriteAmount);
 
 		if (firstWriteAmount < sourceLength)
 		{
-			memcpy (internalBuffer, sourceBuffer + firstWriteAmount, sizeof (DataType) * 
-				(sourceLength - firstWriteAmount));
+			memcpy (internalBuffer, sourceBuffer + firstWriteAmount, sizeof (ElementType) * 
+				(static_cast<unsigned long long>(sourceLength) - firstWriteAmount));
 		}
 
 		writeIndex += writeHopSize != 0 ? writeHopSize : sourceLength;
@@ -125,12 +125,12 @@ struct BlockCircularBuffer final
 
     // The first 'overlapAmount' of 'sourceBuffer' samples are added to the existing buffer
     // The remainder of samples are set in the buffer (overwrite)
-    void overlapWrite (DataType* sourceBuffer, const long sourceLength)
+    void overlapWrite (ElementType* sourceBuffer, const long sourceLength)
     {
 		const auto overlapAmount = sourceLength - writeHopSize;
         auto internalBuffer = block.getData ();
 		auto tempWriteIndex = writeIndex;
-		int firstWriteAmount = writeIndex + overlapAmount > length ?
+		auto firstWriteAmount = writeIndex + overlapAmount > length ?
 			length - writeIndex : overlapAmount;
 
 		juce::FloatVectorOperations::add (internalBuffer + writeIndex, sourceBuffer, firstWriteAmount);
@@ -144,17 +144,17 @@ struct BlockCircularBuffer final
 		tempWriteIndex += overlapAmount;
 		tempWriteIndex %= length;
 
-		const int remainingElements = sourceLength - overlapAmount;
+		const auto remainingElements = sourceLength - overlapAmount;
 		firstWriteAmount = tempWriteIndex + remainingElements > length ?
 			length - tempWriteIndex : remainingElements;
 
-		memcpy (internalBuffer + tempWriteIndex, sourceBuffer + overlapAmount, sizeof (DataType) *
+		memcpy (internalBuffer + tempWriteIndex, sourceBuffer + overlapAmount, sizeof (ElementType) *
 			firstWriteAmount);
 
 		if (firstWriteAmount < remainingElements)
 		{
-			memcpy (internalBuffer, sourceBuffer + overlapAmount + firstWriteAmount, sizeof (DataType) *
-				(remainingElements - firstWriteAmount));
+			memcpy (internalBuffer, sourceBuffer + overlapAmount + firstWriteAmount, sizeof (ElementType) *
+				(remainingElements - static_cast<unsigned long long>(firstWriteAmount)));
 		}
 
 		writeIndex += writeHopSize;
@@ -172,7 +172,7 @@ struct BlockCircularBuffer final
 	}
 
 private:
-    juce::HeapBlock<DataType> block;
+    juce::HeapBlock<ElementType> block;
     long writeIndex = 0;
     long readIndex = 0;
     long length = 0;

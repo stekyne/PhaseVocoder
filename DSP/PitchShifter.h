@@ -12,7 +12,6 @@ public:
 		synthPhaseIncrements (this->windowSize, 0),
 		previousFramePhases (this->windowSize, 0)
 	{
-		
 		setPitchRatio (1.f);
 	}
 
@@ -21,13 +20,15 @@ public:
 		if (pitchRatio == ratio) 
 			return;
 
+		const juce::SpinLock::ScopedLockType lock(paramLock);
+
 		// Lower ratios require a larger amount of incoming samples
 		// This will introduce more latency and large analysis and synthesis buffers
 		pitchRatio = std::clamp (ratio, MinPitchRatio, MaxPitchRatio);
 		
-		synthesisHopSize = (int)(windowSize / (float)MinOverlapAmount);
-		analysisHopSize = (int)round (synthesisHopSize / pitchRatio);
-		resampleSize = (int)std::ceil (windowSize * analysisHopSize / (float)synthesisHopSize);
+		this->synthesisHopSize = (int)(windowSize / (float)MinOverlapAmount);
+		this->analysisHopSize = (int)round (synthesisHopSize / pitchRatio);
+		this->resampleSize = (int)std::ceil (windowSize * analysisHopSize / (float)synthesisHopSize);
 		timeStretchRatio = synthesisHopSize / (float)analysisHopSize;
 
 		// Rescaling due to OLA processing gain
@@ -38,9 +39,11 @@ public:
 
 		accum /= synthesisHopSize;
 		rescalingFactor = (float)accum;
-		synthesisHopSize = analysisHopSize;
+		this->synthesisHopSize = analysisHopSize;
 
-		// TODO do we need to reset store phase values?
+		// Reset phases
+		memset(previousFramePhases.data(), 0, sizeof(FloatType) * windowSize);
+		memset(synthPhaseIncrements.data(), 0, sizeof(FloatType) * windowSize);
 	}
 
 	void processImpl (FloatType* const buffer, const int bufferSize) override final
@@ -62,8 +65,8 @@ public:
 			synthPhaseIncrements[x] = principalArgument (synthPhaseIncrements[x] +
 				(deltaPhase * timeStretchRatio));
 
-			buffer[i] = mag * cos (synthPhaseIncrements[x]);
-			buffer[i + 1] = mag * sin (synthPhaseIncrements[x]);
+			buffer[i] = mag * std::cos (synthPhaseIncrements[x]);
+			buffer[i + 1] = mag * std::sin (synthPhaseIncrements[x]);
 		}
 	}
 

@@ -140,7 +140,7 @@ void PsolaAudioProcessor::processBlock (juce::AudioSampleBuffer& buffer, juce::M
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, numSamples);
 
-    if (true)
+    if (false)
     {
         static float phase = 0.f;
         static float phaseIncrem = 100.f * juce::MathConstants<float>::twoPi / (float)getSampleRate ();

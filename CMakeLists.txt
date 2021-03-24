@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.15)
 project(PhaseVocoder VERSION 0.0.1)
 
+set (CMAKE_CXX_STANDARD 17)
+set (CMAKE_CXX_STANDARD_REQUIRED ON)
+
 find_package(JUCE CONFIG REQUIRED)
 
 juce_add_plugin(PhaseVocoder
@@ -50,6 +53,7 @@ target_link_libraries(PhaseVocoder
     PRIVATE
         # AudioPluginData           # If we'd created a binary data target, we'd link to it here
         juce::juce_audio_utils
+        juce::juce_dsp
     PUBLIC
         juce::juce_recommended_config_flags
         juce::juce_recommended_lto_flags

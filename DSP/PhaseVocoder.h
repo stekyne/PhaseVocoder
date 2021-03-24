@@ -76,16 +76,23 @@ public:
 		std::fill (resampleBuffer, resampleBuffer + maxResampleSize, 0.f);
 	}
 
-	~PhaseVocoder ()
+	~PhaseVocoder()
 	{
-		if (spectralBuffer != nullptr)
+		if (spectralBuffer != nullptr) {
 			delete[] spectralBuffer;
-		
-		if (windowBuffer != nullptr)
-			delete[] windowBuffer;
+			spectralBuffer = nullptr;
+		}
 
-		if (resampleBuffer != nullptr)
+		if (windowBuffer != nullptr) {
+			delete[] windowBuffer;
+			windowBuffer = nullptr;
+		}
+
+		if (resampleBuffer != nullptr) {
 			delete[] resampleBuffer;
+			resampleBuffer = nullptr;
+		}
+		
 	}
 	
 	int getLatencyInSamples () const
@@ -102,8 +109,9 @@ public:
 	// 5. Perform an iFFT back into the time domain
 	// 6. Write the block of samples back into the internal synthesis buffer
 	// 7. Read a block of samples from the synthesis buffer
-	void process (FloatType* incomingBuffer, const int incomingBufferSize)
+	void process (FloatType* const incomingBuffer, const int incomingBufferSize)
 	{
+		const juce::SpinLock::ScopedLockType lock(paramLock);
 		juce::ScopedNoDenormals noDenormals;
 
 		static int callbackCount = 0;
@@ -136,14 +144,14 @@ public:
 			// Collected enough samples, do processing
 			if (incomingSampleCount >= samplesTilNextProcess)
 			{
+				isProcessing = true;
 				incomingSampleCount -= samplesTilNextProcess;
 				DBG (" ");
 				DBG ("Process: SampleCount: " << incomingSampleCount);
 
 				// After first processing, do another process every analysisHopSize samples
 				samplesTilNextProcess = analysisHopSize;
-				isProcessing = true;
-
+				
 				jassert (spectralBufferSize > windowSize);
 				analysisBuffer.setReadHopSize (analysisHopSize);
 				analysisBuffer.read (spectralBuffer, windowSize);
@@ -166,20 +174,11 @@ public:
 				// Apply window to signal
 				juce::FloatVectorOperations::multiply (spectralBuffer, windowBuffer, windowSize);
 
-				auto synthesisWriteBuffer = spectralBuffer;
-				auto synthesisWriteBufferSize = windowSize;
-
 				// Resample output grain to N * (hop size analysis / hop size synthesis)
-				// Otherwise if pitch is 1, just write spectral buffer to synthesis buffer
-				if (windowSize != resampleSize)
-				{
-					linearResample (spectralBuffer, windowSize, resampleBuffer, resampleSize);
-					synthesisWriteBuffer = resampleBuffer;
-					synthesisWriteBufferSize = resampleSize;
-				}
+				linearResample (spectralBuffer, windowSize, resampleBuffer, resampleSize);
 
 				synthesisBuffer.setWriteHopSize (synthesisHopSize);
-				synthesisBuffer.overlapWrite (synthesisWriteBuffer, synthesisWriteBufferSize);
+				synthesisBuffer.overlapWrite (resampleBuffer, resampleSize);
 				DBG ("Synthesis Write Index: " << synthesisBuffer.getWriteIndex ());
 			}
 
@@ -219,7 +218,7 @@ public:
 private:
 	virtual void processImpl (FloatType* const, const int) = 0;
 
-private:
+private:	
 	std::unique_ptr<juce::dsp::FFT> fft;
 
 	// Buffers
@@ -229,12 +228,13 @@ private:
 	FloatType* resampleBuffer = nullptr;
 
 	// Misc state
-	int spectralBufferSize = 0;
 	long incomingSampleCount = 0;
+	int spectralBufferSize = 0;
 	int samplesTilNextProcess = 0;
 	bool isProcessing = false;
 
 protected:
+	juce::SpinLock paramLock;
 	FloatType* windowBuffer = nullptr;
 	float rescalingFactor = 1.f;
 	int analysisHopSize = 0;
