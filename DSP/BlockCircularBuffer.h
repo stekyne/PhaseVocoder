@@ -4,6 +4,8 @@
 #include <memory>
 #include <cassert>
 
+//#define DEBUGLOG
+
 template<typename ElementType = float>
 struct BlockCircularBuffer final
 {
@@ -95,15 +97,15 @@ struct BlockCircularBuffer final
 		readIndex += readHopSize != 0 ? readHopSize : destLength;
 		readIndex %= length;
 
-		if (shouldLog) printState ();
+#ifdef DEBUGLOG
+		printState ();
+#endif
     }
 
     // Write all samples from the 'sourceBuffer' into the internal buffer
     // Perform any wrapping required
     void write (const ElementType* sourceBuffer, const long sourceLength)
     {
-		sampleCount += sourceLength;
-
 		const auto firstWriteAmount = writeIndex + sourceLength >= length ?
 			length - writeIndex : sourceLength;
 
@@ -120,13 +122,20 @@ struct BlockCircularBuffer final
 		writeIndex += writeHopSize != 0 ? writeHopSize : sourceLength;
 		writeIndex %= length;
 
-		if (shouldLog) printState ();
+		latestWriteIndex += sourceLength;
+		latestWriteIndex %= length;
+
+#ifdef DEBUGLOG
+		printState ();
+#endif
     }
 
     // The first 'overlapAmount' of 'sourceBuffer' samples are added to the existing buffer
     // The remainder of samples are set in the buffer (overwrite)
     void overlapWrite (ElementType* sourceBuffer, const long sourceLength)
     {
+		const int lastestWriteAmount = (latestWriteIndex > writeIndex) ? 
+			latestWriteIndex - writeIndex : writeIndex - latestWriteIndex;
 		const auto overlapAmount = sourceLength - writeHopSize;
         auto internalBuffer = block.getData ();
 		auto tempWriteIndex = writeIndex;
@@ -160,26 +169,27 @@ struct BlockCircularBuffer final
 		writeIndex += writeHopSize;
 		writeIndex %= length;
 
-		if (shouldLog) printState ();
+#ifdef DEBUGLOG
+		printState ();
+#endif
     }
 
+#ifdef DEBUGLOG
 	void printState ()
 	{
-#ifdef DEBUG
 		DBG ("Name: " << name << juce::String::formatted (", Read Indx: %d, Write Indx: %d, Length: %d",
 			readIndex, writeIndex, length));
-#endif
 	}
+#endif
 
 private:
     juce::HeapBlock<ElementType> block;
     long writeIndex = 0;
     long readIndex = 0;
     long length = 0;
-	long sampleCount = 0;
+	long latestWriteIndex = 0;
     int writeHopSize = 0;
     int readHopSize = 0;
-	bool shouldLog = false;
 
 #ifdef DEBUG
 	const char* name = "";
