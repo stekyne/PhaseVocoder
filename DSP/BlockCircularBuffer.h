@@ -122,8 +122,7 @@ struct BlockCircularBuffer final
 		writeIndex += writeHopSize != 0 ? writeHopSize : sourceLength;
 		writeIndex %= length;
 
-		latestWriteIndex += sourceLength;
-		latestWriteIndex %= length;
+		latestDataIndex = writeIndex + sourceLength % length;
 
 #ifdef DEBUGLOG
 		printState ();
@@ -132,15 +131,21 @@ struct BlockCircularBuffer final
 
     // The first 'overlapAmount' of 'sourceBuffer' samples are added to the existing buffer
     // The remainder of samples are set in the buffer (overwrite)
-    void overlapWrite (ElementType* sourceBuffer, const long sourceLength)
+    void overlapWrite (ElementType* const sourceBuffer, const long sourceLength)
     {
-		const int lastestWriteAmount = (latestWriteIndex > writeIndex) ? 
-			latestWriteIndex - writeIndex : writeIndex - latestWriteIndex;
-		const auto overlapAmount = sourceLength - writeHopSize;
-        auto internalBuffer = block.getData ();
+		// Since we're using a circular buffer, we have to be careful when to add samples to the existing
+		// data and when to overwrite out of date samples. This number can change when modulating between
+		// the pitch (which alters the size of the overlaps). The calculation below will determine the
+		// index we need to "add" to and at which point we need to "set" the samples to overwrite the history
+		const int writeIndexDifference = getDifferenceBetweenIndexes(writeIndex, latestDataIndex, length);
+		const int overlapSampleCount = sourceLength - writeHopSize;
+		const auto overlapAmount = std::min(writeIndexDifference, overlapSampleCount);
+		
 		auto tempWriteIndex = writeIndex;
 		auto firstWriteAmount = writeIndex + overlapAmount > length ?
 			length - writeIndex : overlapAmount;
+
+		auto internalBuffer = block.getData();
 
 		juce::FloatVectorOperations::add (internalBuffer + writeIndex, sourceBuffer, firstWriteAmount);
 
@@ -166,9 +171,10 @@ struct BlockCircularBuffer final
 				(remainingElements - static_cast<unsigned long long>(firstWriteAmount)));
 		}
 
+		latestDataIndex = (writeIndex + sourceLength) % length;
 		writeIndex += writeHopSize;
 		writeIndex %= length;
-
+		
 #ifdef DEBUGLOG
 		printState ();
 #endif
@@ -183,11 +189,17 @@ struct BlockCircularBuffer final
 #endif
 
 private:
+	int getDifferenceBetweenIndexes(int index1, int index2, int bufferLength) 
+	{
+		return (index1 <= index2) ? index2 - index1 : bufferLength - index1 + index2;
+	}
+
+private:
     juce::HeapBlock<ElementType> block;
     long writeIndex = 0;
     long readIndex = 0;
     long length = 0;
-	long latestWriteIndex = 0;
+	long latestDataIndex = 0;
     int writeHopSize = 0;
     int readHopSize = 0;
 
