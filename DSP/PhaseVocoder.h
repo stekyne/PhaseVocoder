@@ -19,7 +19,6 @@ static void linearResample (const float* const originalSignal, int originalSize,
 	// If the original signal is bigger than the new size, condense the signal to fit the new buffer
 	// otherwise expand the signal to fit the new buffer
 	const auto scale = originalSize / (float)newSignalSize;
-
 	float index = 0.f;
 
 	for (int i = 0; i < newSignalSize; ++i)
@@ -50,9 +49,9 @@ public:
 		windowSize (windowLength),
 		resampleSize (windowLength),
 		spectralBufferSize (windowLength * 2),
-		fft (std::make_unique<juce::dsp::FFT> (nearestPower2 (fftSize))),
 		analysisBuffer (windowLength),
 		synthesisBuffer (windowLength * 3),
+		fft(std::make_unique<juce::dsp::FFT>(nearestPower2(fftSize))),
 		windowBuffer (new FloatType[windowLength])
 	{
 		// TODO make the window more configurable
@@ -111,8 +110,8 @@ public:
 	// 7. Read a block of samples from the synthesis buffer
 	void process (FloatType* const incomingBuffer, const int incomingBufferSize)
 	{
-		const juce::SpinLock::ScopedLockType lock(paramLock);
 		juce::ScopedNoDenormals noDenormals;
+		const juce::SpinLock::ScopedLockType lock(paramLock);
 
 		static int callbackCount = 0;
 		DBG (" ");

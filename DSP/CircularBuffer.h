@@ -183,13 +183,14 @@ private:
     {
         jassert (index < internalBuffer.getNumSamples ());
 
-        if (hasWrapped)
-            index = (index - internalBuffer.getNumSamples ()) + incrementAmount;
-        else 
+        if (hasWrapped) 
         {
-            index += incrementAmount;
-            index %= (size_t)internalBuffer.getNumSamples ();
+            index = (index - internalBuffer.getNumSamples()) + incrementAmount;
+            return;
         }
+
+        index += incrementAmount;
+        index %= (size_t)internalBuffer.getNumSamples ();
     }
 
 private:

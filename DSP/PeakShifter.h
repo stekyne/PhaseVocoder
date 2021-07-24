@@ -29,6 +29,7 @@ public:
 		std::vector<FloatType> mags (bufferSize, 0);
 		std::vector<FloatType> phases (bufferSize, 0);
 
+		// Get magnitudes and phases from spectral coefficients
 		for (int i = 0, x = 0; i < bufferSize - 1; i += 2, ++x)
 		{
 			const auto real = buffer[i];
