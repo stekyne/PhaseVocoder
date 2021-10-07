@@ -8,8 +8,8 @@
 // Resample a signal to a new size using linear interpolation
 // The 'originalSize' is the max size of the original signal
 // The 'newSignalSize' is the size to resample to. The 'newSignal' must be at least as big as this size.
-static void linearResample (const float* const originalSignal, int originalSize,
-	float* const newSignal, int newSignalSize)
+static void linearResample (const float* const originalSignal, const int originalSize,
+	float* const newSignal, const int newSignalSize)
 {
 	const auto lerp = [&](float v0, float v1, float t)
 	{
@@ -40,9 +40,16 @@ public:
 	static constexpr float MaxPitchRatio = 2.0f;
 	static constexpr float MinPitchRatio = 0.5f;
 
+	enum Windows {
+		hann,
+		hamming,
+		kaiser
+	};
+
 public:
 	// Default settings
-	PhaseVocoder (int windowLength = 2048, int fftSize = 2048) :
+	PhaseVocoder (int windowLength = 2048, int fftSize = 2048, 
+		Windows windowType = Windows::hann) :
 		samplesTilNextProcess (windowLength),
 		analysisHopSize (windowLength / MinOverlapAmount),
 		synthesisHopSize (windowLength / MinOverlapAmount),
@@ -51,12 +58,10 @@ public:
 		spectralBufferSize (windowLength * 2),
 		analysisBuffer (windowLength),
 		synthesisBuffer (windowLength * 3),
-		fft(std::make_unique<juce::dsp::FFT>(nearestPower2(fftSize))),
-		windowBuffer (new FloatType[windowLength])
+		windowBuffer(windowLength),
+		fft(std::make_unique<juce::dsp::FFT>(nearestPower2(fftSize)))
 	{
-		// TODO make the window more configurable
-		juce::dsp::WindowingFunction<FloatType>::fillWindowingTables (windowBuffer, windowSize,
-			juce::dsp::WindowingFunction<FloatType>::hann, false);
+		initialiseWindow(getWindowForEnum(windowType));
 
 		// Processing reuses the spectral buffer to resize the output grain
 		// It must be the at least the size of the min pitch ratio
@@ -64,34 +69,19 @@ public:
 		spectralBufferSize = windowLength * (1 / MinPitchRatio) < spectralBufferSize ? 
 			(int)ceil (windowLength * (1 / MinPitchRatio)) : spectralBufferSize;
 
-		spectralBuffer = new FloatType[spectralBufferSize];
-		std::fill (spectralBuffer, spectralBuffer + spectralBufferSize, 0.f);
+		spectralBuffer.resize(spectralBufferSize);
+		std::fill (spectralBuffer.data(), spectralBuffer.data() + spectralBufferSize, 0.f);
 
 		// Calculate maximium size resample signal can be
 		const auto maxResampleSize = (int)std::ceil (std::max (this->windowSize * MaxPitchRatio,
 			this->windowSize / MinPitchRatio));
 
-		resampleBuffer = new FloatType[maxResampleSize];
-		std::fill (resampleBuffer, resampleBuffer + maxResampleSize, 0.f);
+		resampleBuffer.resize(maxResampleSize);
+		std::fill (resampleBuffer.data(), resampleBuffer.data() + maxResampleSize, 0.f);
 	}
 
 	~PhaseVocoder()
 	{
-		if (spectralBuffer != nullptr) {
-			delete[] spectralBuffer;
-			spectralBuffer = nullptr;
-		}
-
-		if (windowBuffer != nullptr) {
-			delete[] windowBuffer;
-			windowBuffer = nullptr;
-		}
-
-		if (resampleBuffer != nullptr) {
-			delete[] resampleBuffer;
-			resampleBuffer = nullptr;
-		}
-		
 	}
 	
 	int getLatencyInSamples () const
@@ -150,34 +140,36 @@ public:
 
 				// After first processing, do another process every analysisHopSize samples
 				samplesTilNextProcess = analysisHopSize;
+
+				auto spectralBufferData = spectralBuffer.data();
 				
 				jassert (spectralBufferSize > windowSize);
 				analysisBuffer.setReadHopSize (analysisHopSize);
-				analysisBuffer.read (spectralBuffer, windowSize);
+				analysisBuffer.read (spectralBufferData, windowSize);
 				DBG ("Analysis Read Index: " << analysisBuffer.getReadIndex ());
 
 				// Apply window to signal
-				juce::FloatVectorOperations::multiply (spectralBuffer, windowBuffer, windowSize);
+				juce::FloatVectorOperations::multiply (spectralBufferData, windowBuffer.data(), windowSize);
 
 				// Rotate signal 180 degrees, move the first half to the back and back to the front
-				std::rotate (spectralBuffer, spectralBuffer + (windowSize / 2), spectralBuffer + windowSize);
+				std::rotate (spectralBufferData, spectralBufferData + (windowSize / 2), spectralBufferData + windowSize);
 				
 				// Perform FFT, process and inverse FFT
-				fft->performRealOnlyForwardTransform (spectralBuffer);
-				processImpl (spectralBuffer, spectralBufferSize);
-				fft->performRealOnlyInverseTransform (spectralBuffer);
+				fft->performRealOnlyForwardTransform (spectralBufferData);
+				processImpl (spectralBufferData, spectralBufferSize);
+				fft->performRealOnlyInverseTransform (spectralBufferData);
 
 				// Undo signal back to original rotation
-				std::rotate (spectralBuffer, spectralBuffer + (windowSize / 2), spectralBuffer + windowSize);
+				std::rotate (spectralBufferData, spectralBufferData + (windowSize / 2), spectralBufferData + windowSize);
 
 				// Apply window to signal
-				juce::FloatVectorOperations::multiply (spectralBuffer, windowBuffer, windowSize);
+				juce::FloatVectorOperations::multiply (spectralBufferData, windowBuffer.data(), windowSize);
 
 				// Resample output grain to N * (hop size analysis / hop size synthesis)
-				linearResample (spectralBuffer, windowSize, resampleBuffer, resampleSize);
+				linearResample (spectralBufferData, windowSize, resampleBuffer.data(), resampleSize);
 
 				synthesisBuffer.setWriteHopSize (synthesisHopSize);
-				synthesisBuffer.overlapWrite (resampleBuffer, resampleSize);
+				synthesisBuffer.overlapWrite (resampleBuffer.data(), resampleSize);
 				DBG ("Synthesis Write Index: " << synthesisBuffer.getWriteIndex ());
 			}
 
@@ -217,14 +209,52 @@ public:
 private:
 	virtual void processImpl (FloatType* const, const int) = 0;
 
+	using JuceWindowTypes = typename juce::dsp::WindowingFunction<FloatType>::WindowingMethod;
+
+	int getOverlapsRequiredForWindowType(Windows windowType) const
+	{
+		switch (windowType) 
+		{
+		case Windows::hann:
+		case Windows::hamming: 
+				return 4;
+
+		case Windows::kaiser: 
+			return 8;
+
+		default: 
+			return -1;
+		}
+	}
+
+	auto getWindowForEnum(Windows windowType)
+	{
+		switch (windowType)
+		{
+		case Windows::kaiser: 
+			return juce::dsp::WindowingFunction<FloatType>::kaiser;
+
+		case Windows::hann:
+		case Windows::hamming:
+		default:
+			return juce::dsp::WindowingFunction<FloatType>::hann;
+		}
+	}
+
+	void initialiseWindow(JuceWindowTypes window)
+	{
+		juce::dsp::WindowingFunction<FloatType>::fillWindowingTables(windowBuffer.data(), windowSize,
+			juce::dsp::WindowingFunction<FloatType>::hann, false);
+	}
+
 private:	
 	std::unique_ptr<juce::dsp::FFT> fft;
 
 	// Buffers
 	BlockCircularBuffer<FloatType> analysisBuffer;
 	BlockCircularBuffer<FloatType> synthesisBuffer;
-	FloatType* spectralBuffer = nullptr;
-	FloatType* resampleBuffer = nullptr;
+	std::vector<FloatType> spectralBuffer;
+	std::vector<FloatType> resampleBuffer;
 
 	// Misc state
 	long incomingSampleCount = 0;
@@ -234,7 +264,7 @@ private:
 
 protected:
 	juce::SpinLock paramLock;
-	FloatType* windowBuffer = nullptr;
+	std::vector<FloatType> windowBuffer;
 	float rescalingFactor = 1.f;
 	int analysisHopSize = 0;
 	int synthesisHopSize = 0;
