@@ -64,7 +64,6 @@ struct BlockCircularBuffer final
 	void setEnableLogging (const char * const bufferName, bool enabled)
 	{
 		name = bufferName;
-		shouldLog = enabled;
 	}
 
     void reset ()
