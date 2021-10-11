@@ -2,30 +2,31 @@
 
 #include "PhaseVocoder.h"
 
-template<typename FloatType = float>
-class PeakShifter : public PhaseVocoder<FloatType>
+class PeakShifter
 {
 public:
 	PeakShifter () :
-		phi0 (windowSize / 2, 0),
-		psi (windowSize / 2, 0),
-		psi2 (windowSize / 2, 0),
-		peaks (windowSize / 2, 0)
+		phi0 (phaseVocoder.getWindowSize() / 2, 0),
+		psi (phaseVocoder.getWindowSize() / 2, 0),
+		psi2 (phaseVocoder.getWindowSize() / 2, 0),
+		peaks (phaseVocoder.getWindowSize() / 2, 0)
 	{
 	}
+
+	int getLatencyInSamples() const { return phaseVocoder.getLatencyInSamples(); }
 
 	void setPitchRatio (float ratio)
 	{
 		if (pitchRatio == ratio)
 			return;
 
-		pitchRatio = std::clamp (ratio, MinPitchRatio, MaxPitchRatio);;
-		timeStretchRatio = synthesisHopSize / (float)analysisHopSize;
+		pitchRatio = std::clamp (ratio, PhaseVocoder::MinPitchRatio, PhaseVocoder::MaxPitchRatio);;
+		timeStretchRatio = phaseVocoder.getSynthesisHopSize() / (float)phaseVocoder.getAnalysisHopSize();
 	}
 
-	void processImpl (FloatType* const buffer, const int bufferSize) override final
+	void process (FloatType* const buffer, const int bufferSize)
 	{
-		auto npeaks = 0;
+		auto peakCount = 0;
 		std::vector<FloatType> mags (bufferSize, 0);
 		std::vector<FloatType> phases (bufferSize, 0);
 
@@ -46,7 +47,7 @@ public:
 			if (mags[i] > mags[i - 1] && mags[i] > mags[i - 2] &&
 				mags[i] > mags[i + 1] && mags[i] > mags[i + 2])
 			{
-				npeaks += 1;
+				peakCount += 1;
 				peaks.push_back (i);
 			}
 		}
@@ -56,64 +57,67 @@ public:
 		{
 			psi = phases;
 		}
-		else if (npeaks > 0 && nprevpeaks > 0)
+		else if (peakCount > 0 && previousPeakCount > 0)
 		{
-			auto prev_p = 1;
+			auto previousPeakIndex = 1;
 
-			for (int p = 0; p < npeaks; ++p)
+			for (int peakIndex = 0; peakIndex < peakCount; ++peakIndex)
 			{
-				const auto peak = peaks[p];
-				const auto prev_peak = prev_peaks[prev_p];
+				const auto peak = peaks[peakIndex];
+				const auto prevPeak = previousPeaks[previousPeakIndex];
 
 				// Connect current peak to the previous closest peak
-				while (prev_p < nprevpeaks && 
-					std::abs (peak - prev_peaks[prev_p + 1]) < std::abs (peak - prev_peak))
+				while (previousPeakIndex < previousPeakCount && 
+					std::abs (peak - previousPeaks[previousPeakIndex + 1]) < std::abs (peak - prevPeak))
 				{
-					prev_p += 1;
+					previousPeakIndex += 1;
 				}
 
 				// Propagate peak's phase assuming linear frequency
 				// Variation between connected peaks p1 and p2
-				const auto avg_p = (peak + prev_peak) * FloatType (0.5);
-				const auto omega = juce::MathConstants<float>::twoPi * analysisHopSize * avg_p / (float)windowSize;
-				const auto peak_delta_phi = omega + principalArgument (phases[peak] + phi0[prev_peak] - omega);
-				const auto peak_target_phase = principalArgument (psi [prev_peak] + peak_delta_phi * timeStretchRatio);
-				const auto peak_phase_rotation = principalArgument (peak_target_phase - phases[peak]);
+				const auto averagePeak = (peak + prevPeak) * FloatType (0.5);
+				const auto omega = juce::MathConstants<float>::twoPi * phaseVocoder.getAnalysisHopSize() * 
+					averagePeak / (float)phaseVocoder.getWindowSize();
+
+				const auto peakDeltaPhi = omega + PhaseVocoder::principalArgument (phases[peak] + phi0[prevPeak] - omega);
+				const auto peakTargetPhase = PhaseVocoder::principalArgument (psi [prevPeak] + peakDeltaPhi * timeStretchRatio);
+				const auto peakPhaseRotation = PhaseVocoder::principalArgument (peakTargetPhase - phases[peak]);
 
 				auto bin1 = 1;
-				auto bin2 = windowSize / 2;
+				auto bin2 = phaseVocoder.getWindowSize() / 2;
 
 				// Rotate phases of all bins around the current peak
-				if (p == npeaks)
+				if (peakIndex == peakCount)
 				{
-					bin1 = (int)std::round ((peaks[p - 1] + peak) * FloatType (0.5));
+					bin1 = (int)std::round ((peaks[peakIndex - 1] + peak) * FloatType (0.5));
 				}
-				else if (npeaks != 1 && p != 1)
+				else if (peakCount != 1 && peakIndex != 1)
 				{
-					bin1 = (int)std::round ((peaks[p - 1] + peak) * FloatType (0.5));
-					bin2 = (int)std::round ((peaks[p + 1] + peak) * FloatType (0.5));
+					bin1 = (int)std::round ((peaks[peakIndex - 1] + peak) * FloatType (0.5));
+					bin2 = (int)std::round ((peaks[peakIndex + 1] + peak) * FloatType (0.5));
 				}
 
 				for (auto i = 0; i < bin2 - bin1; ++i)
-					psi2[bin1 + i] = principalArgument (phases[bin1 + i] + peak_phase_rotation);
+					psi2[bin1 + i] = PhaseVocoder::principalArgument (phases[bin1 + i] + peakPhaseRotation);
 			}
 
 			psi = psi2;
 		}
 		else
 		{
-			for (auto i = 0; i < windowSize / 2; ++i)
+			for (auto i = 0; i < phaseVocoder.getWindowSize() / 2; ++i)
 			{
-				const auto omega = juce::MathConstants<float>::twoPi * analysisHopSize * i / (float)windowSize;
-				const auto deltaPhi = omega + principalArgument (phases[i] - phi0[i] - omega);
-				psi[i] = principalArgument (psi[i] + deltaPhi * timeStretchRatio);
+				const auto omega = juce::MathConstants<float>::twoPi * phaseVocoder.getAnalysisHopSize() * 
+					i / (float)phaseVocoder.getWindowSize();
+				const auto deltaPhi = omega + PhaseVocoder::principalArgument (phases[i] - phi0[i] - omega);
+				psi[i] = PhaseVocoder::principalArgument (psi[i] + deltaPhi * timeStretchRatio);
 			}
 		}
 
 		// Store state
 		phi0 = phases;
-		prev_peaks = peaks;
-		nprevpeaks = npeaks;
+		previousPeaks = peaks;
+		previousPeakCount = peakCount;
 
 		// Reconstruct whole spectrum
 		for (auto i = 0, x = 0; i < bufferSize - 1; i += 2, ++x)
@@ -126,12 +130,13 @@ public:
 	}
 
 private:
+	PhaseVocoder phaseVocoder;
 	std::vector<FloatType> phi0;
 	std::vector<FloatType> psi;
 	std::vector<FloatType> psi2;
 	std::vector<int> peaks;
-	std::vector<int> prev_peaks;
+	std::vector<int> previousPeaks;
 	float pitchRatio = 0.f;
 	float timeStretchRatio = 1.f;
-	int nprevpeaks = 0;
+	int previousPeakCount = 0;
 };

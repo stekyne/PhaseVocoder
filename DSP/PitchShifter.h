@@ -4,76 +4,76 @@
 #include <algorithm>
 #include "PhaseVocoder.h"
 
-template<typename FloatType = float>
-class PitchShifter : public PhaseVocoder<FloatType>
+class PitchShifter
 {
 public:
 	PitchShifter () :
-		synthPhaseIncrements (this->windowSize, 0),
-		previousFramePhases (this->windowSize, 0)
+		synthPhaseIncrements (phaseVocoder.getWindowSize(), 0),
+		previousFramePhases (phaseVocoder.getWindowSize(), 0)
 	{
 		setPitchRatio (1.f);
 	}
 
-	void setPitchRatio (float ratio)
+	int getLatencyInSamples() const { return phaseVocoder.getLatencyInSamples(); }
+
+	void setPitchRatio (float newPitchRatio)
 	{
-		if (pitchRatio == ratio) 
+		if (phaseVocoder.getPitchRatio() == newPitchRatio) 
 			return;
 
-		const juce::SpinLock::ScopedLockType lock(paramLock);
+		const juce::SpinLock::ScopedLockType lock(phaseVocoder.getParamLock());
 
-		// Lower ratios require a larger amount of incoming samples
-		// This will introduce more latency and large analysis and synthesis buffers
-		pitchRatio = std::clamp (ratio, MinPitchRatio, MaxPitchRatio);
-		
-		this->synthesisHopSize = (int)(windowSize / (float)MinOverlapAmount);
-		this->analysisHopSize = (int)round (synthesisHopSize / pitchRatio);
-		this->resampleSize = (int)std::ceil (windowSize * analysisHopSize / (float)synthesisHopSize);
-		timeStretchRatio = synthesisHopSize / (float)analysisHopSize;
+		phaseVocoder.setPitchRatio(newPitchRatio);
+		phaseVocoder.setSynthesisHopSize((int)(phaseVocoder.getWindowSize() / (float)phaseVocoder.getWindowOverlapCount()));
+		phaseVocoder.setAnalysisHopSize((int)round(phaseVocoder.getSynthesisHopSize() / phaseVocoder.getPitchRatio()));
 
 		// Rescaling due to OLA processing gain
 		double accum = 0.0;
+		auto windowFunction = phaseVocoder.getWindowFunction();
 
-		for (int i = 0; i < windowSize; ++i)
-			accum += windowBuffer[i] * (double)windowBuffer[i];
+		for (int i = 0; i < phaseVocoder.getWindowSize(); ++i)
+			accum += windowFunction[i] * (double)windowFunction[i];
 
-		accum /= synthesisHopSize;
-		rescalingFactor = (float)accum;
-		this->synthesisHopSize = analysisHopSize;
+		accum /= phaseVocoder.getSynthesisHopSize();
+		phaseVocoder.setRescalingFactor((float)accum);
+		phaseVocoder.setSynthesisHopSize(phaseVocoder.getAnalysisHopSize());
 
 		// Reset phases
-		memset(previousFramePhases.data(), 0, sizeof(FloatType) * windowSize);
-		memset(synthPhaseIncrements.data(), 0, sizeof(FloatType) * windowSize);
+		memset(previousFramePhases.data(), 0, sizeof(FloatType) * phaseVocoder.getWindowSize());
+		memset(synthPhaseIncrements.data(), 0, sizeof(FloatType) * phaseVocoder.getWindowSize());
 	}
 
-	void processImpl (FloatType* const buffer, const int bufferSize) override final
+	void process(FloatType* const buffer, const int bufferSize)
 	{
-		// Update phase increments for pitch shifting
-		for (int i = 0, x = 0; i < bufferSize - 1; i += 2, ++x)
+		phaseVocoder.process(buffer, bufferSize, [&](FloatType* const buffer, const int bufferSize) -> void
 		{
-			const auto real = buffer[i];
-			const auto imag = buffer[i + 1];
-			const auto mag = sqrtf (real * real + imag * imag);
-			const auto phase = atan2 (imag, real);
-			const auto omega = juce::MathConstants<float>::twoPi * analysisHopSize * x / (float)windowSize;
+			for (int i = 0, x = 0; i < bufferSize - 1; i += 2, ++x)
+			{
+				// Update phase increments for pitch shifting
+				const auto real = buffer[i];
+				const auto imag = buffer[i + 1];
+				const auto mag = sqrtf(real * real + imag * imag);
+				const auto phase = atan2(imag, real);
 
-			const auto deltaPhase = omega + principalArgument (
-				phase - previousFramePhases[x] - omega);
+				const auto omega = juce::MathConstants<float>::twoPi * phaseVocoder.getAnalysisHopSize() *
+					x / (float)phaseVocoder.getWindowSize();
 
-			previousFramePhases[x] = phase;
+				const auto deltaPhase = omega + PhaseVocoder::principalArgument(
+					phase - previousFramePhases[x] - omega);
 
-			synthPhaseIncrements[x] = principalArgument (synthPhaseIncrements[x] +
-				(deltaPhase * timeStretchRatio));
+				previousFramePhases[x] = phase;
 
-			buffer[i] = mag * std::cos (synthPhaseIncrements[x]);
-			buffer[i + 1] = mag * std::sin (synthPhaseIncrements[x]);
-		}
+				synthPhaseIncrements[x] = PhaseVocoder::principalArgument(synthPhaseIncrements[x] +
+					(deltaPhase * phaseVocoder.getTimeStretchRatio()));
+
+				buffer[i] = mag * std::cos(synthPhaseIncrements[x]);
+				buffer[i + 1] = mag * std::sin(synthPhaseIncrements[x]);
+			}
+		});
 	}
 
 private:
+	PhaseVocoder phaseVocoder;
 	std::vector<FloatType> synthPhaseIncrements;
 	std::vector<FloatType> previousFramePhases;
-	
-	float pitchRatio = 0.f;
-	float timeStretchRatio = 1.f;
 };
