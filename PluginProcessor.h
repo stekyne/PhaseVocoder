@@ -1,18 +1,18 @@
 #pragma once
 
 #include <juce_audio_processors/juce_audio_processors.h>
+#include <atomic>
 
 #include "DSP/BlockCircularBuffer.h"
 #include "DSP/PhaseVocoder.h"
 #include "DSP/PitchShifter.h"
 #include "DSP/PeakShifter.h"
-#include <atomic>
 
-class PsolaAudioProcessor  : public juce::AudioProcessor
+class PhaseVocoderAudioProcessor  : public juce::AudioProcessor
 {
 public:
-    PsolaAudioProcessor();
-    ~PsolaAudioProcessor();
+    PhaseVocoderAudioProcessor();
+    ~PhaseVocoderAudioProcessor();
 
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
@@ -45,13 +45,13 @@ public:
 	juce::AudioProcessorValueTreeState state;
 
 private:
-	PitchShifter<float> pitchShifter;
-	PeakShifter<float> peakShifter;
+	PitchShifter pitchShifter;
+	PeakShifter peakShifter;
 	std::atomic<float>* pitchParam = nullptr;
 
 #ifdef DEBUG
     BlockCircularBuffer<float> history[2];
 #endif
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PsolaAudioProcessor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PhaseVocoderAudioProcessor)
 };

@@ -1,7 +1,7 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
-PsolaAudioProcessor::PsolaAudioProcessor() :
+PhaseVocoderAudioProcessor::PhaseVocoderAudioProcessor() :
 	state (*this, nullptr, "Params", {
 		std::make_unique<juce::AudioParameterFloat> ("Pitch", "Pitch Multiplier", 
 			juce::NormalisableRange<float> (0.5f, 2.f), 1.0f)
@@ -30,16 +30,16 @@ PsolaAudioProcessor::PsolaAudioProcessor() :
 	setLatencySamples (window);
 }
 
-PsolaAudioProcessor::~PsolaAudioProcessor()
+PhaseVocoderAudioProcessor::~PhaseVocoderAudioProcessor()
 {
 }
 
-const juce::String PsolaAudioProcessor::getName() const
+const juce::String PhaseVocoderAudioProcessor::getName() const
 {
     return JucePlugin_Name;
 }
 
-bool PsolaAudioProcessor::acceptsMidi() const
+bool PhaseVocoderAudioProcessor::acceptsMidi() const
 {
    #if JucePlugin_WantsMidiInput
     return true;
@@ -48,7 +48,7 @@ bool PsolaAudioProcessor::acceptsMidi() const
    #endif
 }
 
-bool PsolaAudioProcessor::producesMidi() const
+bool PhaseVocoderAudioProcessor::producesMidi() const
 {
    #if JucePlugin_ProducesMidiOutput
     return true;
@@ -57,7 +57,7 @@ bool PsolaAudioProcessor::producesMidi() const
    #endif
 }
 
-bool PsolaAudioProcessor::isMidiEffect () const
+bool PhaseVocoderAudioProcessor::isMidiEffect () const
 {
    #ifdef JucePlugin_IsMidiEffect
     return false;
@@ -66,44 +66,44 @@ bool PsolaAudioProcessor::isMidiEffect () const
    #endif
 }
 
-double PsolaAudioProcessor::getTailLengthSeconds() const
+double PhaseVocoderAudioProcessor::getTailLengthSeconds() const
 {
     return 0.0;
 }
 
-int PsolaAudioProcessor::getNumPrograms()
+int PhaseVocoderAudioProcessor::getNumPrograms()
 {
     return 1;
 }
 
-int PsolaAudioProcessor::getCurrentProgram()
+int PhaseVocoderAudioProcessor::getCurrentProgram()
 {
     return 0;
 }
 
-void PsolaAudioProcessor::setCurrentProgram (int index)
+void PhaseVocoderAudioProcessor::setCurrentProgram (int index)
 {
 }
 
-const juce::String PsolaAudioProcessor::getProgramName (int index)
+const juce::String PhaseVocoderAudioProcessor::getProgramName (int index)
 {
     return {};
 }
 
-void PsolaAudioProcessor::changeProgramName (int index, const juce::String& newName)
+void PhaseVocoderAudioProcessor::changeProgramName (int index, const juce::String& newName)
 {
 }
 
-void PsolaAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
+void PhaseVocoderAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
 }
 
-void PsolaAudioProcessor::releaseResources()
+void PhaseVocoderAudioProcessor::releaseResources()
 {
 }
 
 #ifndef JucePlugin_PreferredChannelConfigurations
-bool PsolaAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
+bool PhaseVocoderAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
 {
   #if JucePlugin_IsMidiEffect
     ignoreUnused (layouts);
@@ -126,7 +126,7 @@ bool PsolaAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) co
 }
 #endif
 
-void PsolaAudioProcessor::processBlock (juce::AudioSampleBuffer& buffer, juce::MidiBuffer& midiMessages)
+void PhaseVocoderAudioProcessor::processBlock (juce::AudioSampleBuffer& buffer, juce::MidiBuffer& midiMessages)
 {
     const auto numSamples = buffer.getNumSamples ();
     const auto totalNumInputChannels  = getTotalNumInputChannels();
@@ -140,21 +140,6 @@ void PsolaAudioProcessor::processBlock (juce::AudioSampleBuffer& buffer, juce::M
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, numSamples);
 
-    if (false)
-    {
-        static float phase = 0.f;
-        static float phaseIncrem = 100.f * juce::MathConstants<float>::twoPi / (float)getSampleRate ();
-
-        auto channels = buffer.getArrayOfWritePointers ();
-
-        for (int i = 0; i < buffer.getNumSamples (); ++i)
-        { 
-			//channels[0][i] = channels[1][i] = 1.f;
-            channels[0][i] = channels[1][i] = sinf (phase += phaseIncrem);
-            phase = fmodf (phase, juce::MathConstants<float>::twoPi);
-        }
-    }
-
 	pitchShifter.setPitchRatio (pitchParam->load());
 	pitchShifter.process (buffer.getWritePointer (0), numSamples);
 	//peakShifter.process (buffer.getWritePointer (0), numSamples);
@@ -167,23 +152,23 @@ void PsolaAudioProcessor::processBlock (juce::AudioSampleBuffer& buffer, juce::M
 #endif
 }
 
-bool PsolaAudioProcessor::hasEditor() const
+bool PhaseVocoderAudioProcessor::hasEditor() const
 {
     return true;
 }
 
-juce::AudioProcessorEditor* PsolaAudioProcessor::createEditor()
+juce::AudioProcessorEditor* PhaseVocoderAudioProcessor::createEditor()
 {
-    return new PsolaAudioProcessorEditor (this);
+    return new PhaseVocoderAudioProcessorEditor (this);
 }
 
 //==============================================================================
-void PsolaAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
+void PhaseVocoderAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
 
 }
 
-void PsolaAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
+void PhaseVocoderAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
 
 }
@@ -191,5 +176,5 @@ void PsolaAudioProcessor::setStateInformation (const void* data, int sizeInBytes
 // This creates new instances of the plugin..
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
-    return new PsolaAudioProcessor();
+    return new PhaseVocoderAudioProcessor();
 }
