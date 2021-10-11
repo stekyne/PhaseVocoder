@@ -1,7 +1,7 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
-PsolaAudioProcessorEditor::PsolaAudioProcessorEditor (PsolaAudioProcessor* p): 
+PhaseVocoderAudioProcessorEditor::PhaseVocoderAudioProcessorEditor (PhaseVocoderAudioProcessor* p): 
 	AudioProcessorEditor (*p), 
 	processor (p),
 	pitchAttachment (p->state, "Pitch", pitchSlider)
@@ -10,16 +10,16 @@ PsolaAudioProcessorEditor::PsolaAudioProcessorEditor (PsolaAudioProcessor* p):
 	setSize (400, 300);
 }
 
-PsolaAudioProcessorEditor::~PsolaAudioProcessorEditor()
+PhaseVocoderAudioProcessorEditor::~PhaseVocoderAudioProcessorEditor()
 {
 }
 
-void PsolaAudioProcessorEditor::paint (juce::Graphics& g)
+void PhaseVocoderAudioProcessorEditor::paint (juce::Graphics& g)
 {
 	g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
 }
 
-void PsolaAudioProcessorEditor::resized()
+void PhaseVocoderAudioProcessorEditor::resized()
 {
 	pitchSlider.setBounds (0, 0, 400, 30);
 }
