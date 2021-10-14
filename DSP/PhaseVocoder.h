@@ -117,7 +117,7 @@ public:
 	// 6. Write the block of samples back into the internal synthesis buffer
 	// 7. Read a block of samples from the synthesis buffer
 	void process (FloatType* const audioBuffer, const int audioBufferSize, 
-		std::invocable<void(FloatType* const, const int)> auto processCallback)
+		std::function<void(FloatType* const, const int)> processCallback)
 	{
 		juce::ScopedNoDenormals noDenormals;
 		const juce::SpinLock::ScopedLockType lock(paramLock);

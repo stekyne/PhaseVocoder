@@ -45,7 +45,7 @@ public:
 
 	void process(FloatType* const buffer, const int bufferSize)
 	{
-		phaseVocoder.process(buffer, bufferSize, [&](FloatType* const buffer, const int bufferSize) -> void
+		phaseVocoder.process(buffer, bufferSize, [&](FloatType* const buffer, const int bufferSize)
 		{
 			for (int i = 0, x = 0; i < bufferSize - 1; i += 2, ++x)
 			{
@@ -62,7 +62,6 @@ public:
 					phase - previousFramePhases[x] - omega);
 
 				previousFramePhases[x] = phase;
-
 				synthPhaseIncrements[x] = PhaseVocoder::principalArgument(synthPhaseIncrements[x] +
 					(deltaPhase * phaseVocoder.getTimeStretchRatio()));
 
