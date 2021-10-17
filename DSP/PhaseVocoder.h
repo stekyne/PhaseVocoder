@@ -26,9 +26,6 @@ public:
 	PhaseVocoder (int windowLength = 2048, int fftSize = 2048, 
 		Windows windowType = Windows::hann) :
 		samplesTilNextProcess (windowLength),
-		windowOverlaps(getOverlapsRequiredForWindowType(windowType)),
-		analysisHopSize (windowLength / windowOverlaps),
-		synthesisHopSize (windowLength / windowOverlaps),
 		windowSize (windowLength),
 		resampleBufferSize (windowLength),
 		spectralBufferSize (windowLength * 2),
@@ -37,6 +34,10 @@ public:
 		windowFunction(windowLength),
 		fft(std::make_unique<juce::dsp::FFT>(nearestPower2(fftSize)))
 	{
+		windowOverlaps = getOverlapsRequiredForWindowType(windowType);
+		analysisHopSize = windowLength / windowOverlaps;
+		synthesisHopSize = windowLength / windowOverlaps;
+
 		initialiseWindow(getWindowForEnum(windowType));
 
 		// Processing reuses the spectral buffer to resize the output grain
@@ -84,7 +85,6 @@ public:
 	void setSynthesisHopSize(int hopSize) 
 	{ 
 		synthesisHopSize = hopSize; 
-		updateResampleBufferSize();
 	}
 	
 	int getAnalysisHopSize() const { return analysisHopSize; }
@@ -92,7 +92,6 @@ public:
 	void setAnalysisHopSize(int hopSize) 
 	{ 
 		analysisHopSize = hopSize; 
-		updateResampleBufferSize();
 	}
 
 	const FloatType* const getWindowFunction()

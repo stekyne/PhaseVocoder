@@ -36,6 +36,7 @@ public:
 
 		accum /= phaseVocoder.getSynthesisHopSize();
 		phaseVocoder.setRescalingFactor((float)accum);
+		phaseVocoder.updateResampleBufferSize();
 		phaseVocoder.setSynthesisHopSize(phaseVocoder.getAnalysisHopSize());
 
 		// Reset phases
